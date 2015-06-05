@@ -1,0 +1,76 @@
+package com.hatiolab.dx.data;
+
+import java.io.UnsupportedEncodingException;
+
+import com.hatiolab.dx.net.Util;
+import com.hatiolab.dx.packet.Data;
+
+public class ByteString extends Data {
+	
+	private long len;
+	private String data;
+	
+	public ByteString() {
+	}
+	
+	public ByteString(String data) {
+		try {
+			this.len = data.getBytes("UTF-8").length;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		this.data = data;
+	}
+		
+	public ByteString(String data, int len) {
+		this.len = len;
+		this.data = data;
+	}
+		
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	@Override
+	public int unmarshalling(byte[] buf, int offset) throws Exception {
+		
+		if(offset + 4 > buf.length)
+			throw new Exception("OutOfBound");
+
+		len = Util.readU32(buf, offset);
+		
+		if(offset + 4 + len > buf.length)
+			throw new Exception("OutOfBound");
+		
+		this.data = Util.readString(buf, offset + 4, (int)len);
+
+		return getByteLength();
+	}
+
+	@Override
+	public int marshalling(byte[] buf, int offset) throws Exception {
+
+		if(offset + 4 + len > buf.length)
+			throw new Exception("OutOfBound");
+
+		Util.writeU32(len, buf, offset);
+		
+		Util.writeString(data, buf, offset + 4, (int)len);
+		
+		return getByteLength();
+	}
+
+	@Override
+	public int getByteLength() {
+		return (int)(4 + len);
+	}
+
+	@Override
+	public int getDataType() {
+		return TYPE_STRING;
+	}
+}
