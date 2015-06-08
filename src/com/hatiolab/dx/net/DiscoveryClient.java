@@ -23,6 +23,8 @@ public class DiscoveryClient {
 	
 	protected int port;
 	
+	DiscoveryListener discoveryListener;
+	
 	protected byte[] headerBuf = new byte[128];
 	protected byte[] dataBuf = new byte[128];
 	protected byte[] discoveryBuf = new byte[128];
@@ -54,7 +56,7 @@ public class DiscoveryClient {
 					data.unmarshalling(dataBuf, 0);
 					int serverport = data.getS32();
 					
-					System.out.println("GET SERVER : " + addr + "/" + serverport);
+					DiscoveryClient.this.discoveryListener.onFoundServer(addr.getAddress(), serverport);
 				}
 				
 			} catch (Exception e) {
@@ -82,11 +84,13 @@ public class DiscoveryClient {
 		channel.send(buffer, new InetSocketAddress("255.255.255.255", DiscoveryServer.DEFAULT_PORT_NUMBER));//socket().send(packet);
 	}
 
-	public DiscoveryClient() throws IOException {
-		this(DEFAULT_PORT_NUMBER);
+	public DiscoveryClient(DiscoveryListener discoveryListener) throws IOException {
+		this(discoveryListener, DEFAULT_PORT_NUMBER);
 	}
 
-	public DiscoveryClient(int port) throws IOException {
+	public DiscoveryClient(DiscoveryListener discoveryListener, int port) throws IOException {
+		this.discoveryListener = discoveryListener;
+
 		this.port = port;
 		channel = DatagramChannel.open();
 		channel.configureBlocking(false);

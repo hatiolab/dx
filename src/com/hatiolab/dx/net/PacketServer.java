@@ -2,7 +2,6 @@ package com.hatiolab.dx.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -12,7 +11,6 @@ import com.hatiolab.dx.api.EventListener;
 import com.hatiolab.dx.mplexer.SelectableHandler;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
-import com.hatiolab.dx.packet.Packet;
 
 public class PacketServer {
 	
@@ -20,10 +18,6 @@ public class PacketServer {
 	protected int port;
 	
 	protected ServerSocketChannel serverSocketChannel;
-
-	protected Header header = new Header();
-	protected ByteBuffer headerBuffer = ByteBuffer.allocate(header.getByteLength());
-	protected ByteBuffer dataBuffer = ByteBuffer.allocate(2 * 1024 * 1024);
 
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
@@ -45,10 +39,10 @@ public class PacketServer {
 
 					SocketChannel channel = (SocketChannel)key.channel();
 
-					Header header = PacketReader.parseHeader(channel);
-					Data data = PacketReader.parseData(channel, header);
+					Header header = PacketIO.parseHeader(channel);
+					Data data = PacketIO.parseData(channel, header);
 
-					eventListener.onEvent(channel, header, data);					
+					eventListener.onEvent(header, data);					
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -78,15 +72,5 @@ public class PacketServer {
 	public SelectableHandler getSelectableHandler() {
 		return selectableHandler;
 	}
-	
-	public void sendPacket(SocketChannel channel, Header header, Data data) throws Exception {
-		Packet packet = new Packet(header, data);
-		packet.marshalling(dataBuffer.array(), 0);
-		
-		dataBuffer.limit(packet.getByteLength());
-		dataBuffer.position(0);
-		
-		/* Send response */
-		channel.write(dataBuffer);
-	}
+
 }

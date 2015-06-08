@@ -18,8 +18,9 @@ import com.hatiolab.dx.data.U16Array;
 import com.hatiolab.dx.data.U32Array;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
+import com.hatiolab.dx.packet.Packet;
 
-public class PacketReader {
+public class PacketIO {
 	static final protected Header header = new Header();
 	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(header.getByteLength());
 	static final protected ByteBuffer dataBuffer = ByteBuffer.allocate(2 * 1024 * 1024);
@@ -101,4 +102,14 @@ public class PacketReader {
 		return data;
 	}
 
+	public static void sendPacket(SocketChannel channel, Header header, Data data) throws Exception {
+		Packet packet = new Packet(header, data);
+		packet.marshalling(dataBuffer.array(), 0);
+		
+		dataBuffer.limit(packet.getByteLength());
+		dataBuffer.position(0);
+		
+		/* Send response */
+		channel.write(dataBuffer);
+	}
 }

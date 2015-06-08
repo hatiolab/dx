@@ -141,7 +141,7 @@ public class DxConnectPoll {
 
 						data.unmarshalling(dataBuf, 0);
 
-						eventListener.onEvent(null, header, data);
+						eventListener.onEvent(header, data);
 
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -194,7 +194,7 @@ public class DxConnectPoll {
 		this.socket.close();
 		this.socket = null;
 		
-		eventListener.onEvent(null, new Header(Type.DX_PACKET_TYPE_EVENT, Code.DX_EVT_DISCONNECT, Data.TYPE_NONE), null);
+		eventListener.onEvent(new Header(Type.DX_PACKET_TYPE_EVENT, Code.DX_EVT_DISCONNECT, Data.TYPE_NONE), null);
 	}
 	
 	public void sendPacket(Packet packet) throws Exception {

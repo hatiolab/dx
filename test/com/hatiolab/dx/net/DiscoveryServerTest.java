@@ -2,6 +2,7 @@ package com.hatiolab.dx.net;
 
 import static org.junit.Assert.assertFalse;
 
+import java.net.InetAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
@@ -21,7 +22,12 @@ public class DiscoveryServerTest {
 	public void setUp() throws Exception {
 		mplexer = new EventMultiplexer();
 		discoveryServer = new DiscoveryServer();
-		discoveryClient = new DiscoveryClient();
+		discoveryClient = new DiscoveryClient(new DiscoveryListener() {
+			@Override
+			public void onFoundServer(InetAddress address, int port) {
+				System.out.println("Server Found : " + address + "/" + port);
+			}
+		});
 		
 		SelectableChannel channel = discoveryServer.getSelectableChannel();
 		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
