@@ -31,6 +31,7 @@ public class EventMultiplexer {
 				}
 			}
 		}
+		selector.selectedKeys().clear();
 	}
 	
 	public void close() throws IOException {
