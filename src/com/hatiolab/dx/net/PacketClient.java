@@ -17,6 +17,7 @@ public class PacketClient {
 	protected int port;
 	
 	protected SocketChannel clientSocketChannel;
+	protected boolean connected = false;
 
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
@@ -28,6 +29,9 @@ public class PacketClient {
 					SocketChannel channel = (SocketChannel)key.channel();
 					if(channel.isConnectionPending()) {
 						if(channel.finishConnect()) {
+							
+							PacketClient.this.connected = true;
+							
 							eventListener.onConnected(channel);
 
 							key.interestOps(SelectionKey.OP_READ);
@@ -63,6 +67,7 @@ public class PacketClient {
 	public void close() throws IOException {
 		clientSocketChannel.close();
 		clientSocketChannel = null;
+		connected = false;
 	}
 	
 	public SelectableChannel getSelectableChannel() {
@@ -71,5 +76,9 @@ public class PacketClient {
 
 	public SelectableHandler getSelectableHandler() {
 		return selectableHandler;
+	}
+	
+	public boolean isConnected() {
+		return connected;
 	}
 }

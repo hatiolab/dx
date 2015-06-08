@@ -138,9 +138,13 @@ public class PacketServerTest {
 			int i = 0;
 			
 			discoveryClient.sendDiscoveryPacket();
-			
+
 			for(i = 0;i < 10;i++) {
 				mplexer.poll(1000);
+				
+//				if(packetClient == null) {
+//					discoveryClient.sendDiscoveryPacket();
+//				}
 			}
 			
 		} catch (Exception e) {
