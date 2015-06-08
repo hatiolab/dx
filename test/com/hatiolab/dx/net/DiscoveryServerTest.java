@@ -34,8 +34,9 @@ public class DiscoveryServerTest {
 
 	@After
 	public void tearDown() throws Exception {
-		mplexer = null;
-		discoveryServer = null;
+		mplexer.close();
+		discoveryClient.close();
+		discoveryServer.close();
 	}
 
 	@Test
@@ -46,10 +47,6 @@ public class DiscoveryServerTest {
 				
 				discoveryClient.sendDiscoveryPacket();
 			}
-			
-			mplexer.close();
-			discoveryClient.close();
-			discoveryServer.close();			
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertFalse(true);
