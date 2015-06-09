@@ -20,7 +20,6 @@ public class DiscoveryClient {
 	protected DatagramChannel channel;
 	
 	protected int discoveryServerPort;
-	protected int discoveryClientPort;
 	
 	protected DiscoveryListener discoveryListener;
 	
@@ -91,22 +90,14 @@ public class DiscoveryClient {
 	public DiscoveryClient(DiscoveryListener discoveryListener, int discoveryServerPort, int discoveryClientPort) throws IOException {
 		this.discoveryListener = discoveryListener;
 
-		this.discoveryClientPort = discoveryClientPort;
 		this.discoveryServerPort = discoveryServerPort;
 		
 		channel = DatagramChannel.open();
 		channel.configureBlocking(false);
 		
 		channel.socket().setBroadcast(true);
-//		if(discoveryClientPort == 0) {
-//			channel.socket().bind(null);
-//			this.discoveryClientPort = channel.socket().getLocalPort();
-//		} else {
-			channel.socket().bind(new InetSocketAddress("0.0.0.0", discoveryClientPort));
-//		}
+		channel.socket().bind(new InetSocketAddress("0.0.0.0", discoveryClientPort));
 		channel.socket().setReuseAddress(true);
-
-		this.discoveryClientPort = channel.socket().getLocalPort();
 	}
 	
 	public void close() throws IOException {
