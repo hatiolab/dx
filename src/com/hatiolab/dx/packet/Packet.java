@@ -1,5 +1,7 @@
 package com.hatiolab.dx.packet;
 
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Marshallable;
 
 public class Packet implements Marshallable {
@@ -32,7 +34,7 @@ public class Packet implements Marshallable {
 		this.data = data;
 	}
 
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		int len = header.unmarshalling(buf, offset);
 		if(data != null)
 			len += data.unmarshalling(buf, offset + len);
@@ -40,7 +42,7 @@ public class Packet implements Marshallable {
 		return len;
 	}
 
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 		/* encoding 하기 전에 전체 길이를 header에 설정한다. */ 
 		header.setLen(getByteLength()); 
 				

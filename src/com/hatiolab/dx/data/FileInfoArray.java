@@ -1,5 +1,7 @@
 package com.hatiolab.dx.data;
 
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
 
@@ -34,10 +36,10 @@ public class FileInfoArray extends Data {
 	}
 
 	@Override
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + 4 + Data.PATH_MAX_SIZE > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		long len = Util.readU32(buf, offset);
 		path = Util.readString(buf, offset + 4, Data.PATH_MAX_SIZE);
@@ -45,7 +47,7 @@ public class FileInfoArray extends Data {
 		array = new FileInfo[(int)len];
 		
 		if(offset + 4 + Data.PATH_MAX_SIZE + len * (Data.PATH_MAX_SIZE + 8) > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		for(int i = 0;i < len;i++) {
 			array[i] = new FileInfo();
@@ -56,10 +58,10 @@ public class FileInfoArray extends Data {
 	}
 
 	@Override
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + 4 + Data.PATH_MAX_SIZE + array.length * (Data.PATH_MAX_SIZE + 8) > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(array.length, buf, offset);
 		Util.writeString(path, buf, offset + 4, Data.PATH_MAX_SIZE);

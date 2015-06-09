@@ -1,5 +1,7 @@
 package com.hatiolab.dx.data;
 
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
 
@@ -32,15 +34,15 @@ public class S32Array extends Data {
 	}
 	
 	@Override
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + 4 > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.len = Util.readU32(buf, offset);
 		
 		if(offset + 4 + len * 4 > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.buf = new float[(int)len];
 		
@@ -51,10 +53,10 @@ public class S32Array extends Data {
 	}
 
 	@Override
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + 4 + len * 4 > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(len, buf, offset);
 		

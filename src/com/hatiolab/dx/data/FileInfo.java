@@ -1,5 +1,7 @@
 package com.hatiolab.dx.data;
 
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
 
@@ -42,10 +44,10 @@ public class FileInfo extends Data {
 	}
 
 	@Override
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + getByteLength() > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.size = (int)Util.readU32(buf, offset);
 		this.mtime = (int)Util.readU32(buf, offset + 4);
@@ -55,10 +57,10 @@ public class FileInfo extends Data {
 	}
 
 	@Override
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + getByteLength() > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(this.size, buf, offset);
 		Util.writeU32(this.mtime, buf, offset + 4);

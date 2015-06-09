@@ -34,14 +34,10 @@ public class PacketServerTest {
 		SocketChannel channel;
 		
 		@Override
-		public void onEvent(Header header, Data data) {
-			try {
-				System.out.println("HELLO, SERVER");			
+		public void onEvent(Header header, Data data) throws IOException {
+			System.out.println("HELLO, SERVER");			
 
-				PacketIO.sendPacket(this.channel, header, data); // Send Back..
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			PacketIO.sendPacket(this.channel, header, data); // Send Back..
 		}
 		
 		@Override
@@ -59,13 +55,9 @@ public class PacketServerTest {
 		SocketChannel channel;
 		
 		@Override
-		public void onEvent(Header header, Data data) {
-			try {
-				PacketIO.sendPacket(this.channel, header, data);
-				Assert.assertEquals(((Primitive)data).getF32(), 0.1f);
-			} catch (Exception e) {
-				e.printStackTrace();
-			} // Send Back..
+		public void onEvent(Header header, Data data) throws IOException {
+			PacketIO.sendPacket(this.channel, header, data);
+			Assert.assertEquals(((Primitive)data).getF32(), 0.1f);
 			System.out.println("HELLO, CLIENT");			
 		}
 		
@@ -96,16 +88,12 @@ public class PacketServerTest {
 	class ServerDiscoveryListener implements DiscoveryListener {
 
 		@Override
-		public void onFoundServer(InetAddress address, int port) {
-			try {
-				packetClient = new PacketClient(new ClientEventListener(), address.getHostAddress(), port);
+		public void onFoundServer(InetAddress address, int port) throws IOException {
+			packetClient = new PacketClient(new ClientEventListener(), address.getHostAddress(), port);
 
-				SelectableChannel channel = packetClient.getSelectableChannel();
-				SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
-				key.attach(packetClient.getSelectableHandler());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			SelectableChannel channel = packetClient.getSelectableChannel();
+			SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
+			key.attach(packetClient.getSelectableHandler());
 		}
 	}
 
@@ -144,9 +132,9 @@ public class PacketServerTest {
 		try {
 			int i = 0;
 			
-			discoveryClient.sendDiscoveryPacket();
+//			discoveryClient.sendDiscoveryPacket();
 
-			for(i = 0;i < 10;i++) {
+			for(i = 0;i < 10000;i++) {
 				mplexer.poll(1000);
 				
 //				if(packetClient == null) {

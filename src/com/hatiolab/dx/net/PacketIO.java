@@ -1,5 +1,6 @@
 package com.hatiolab.dx.net;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -102,7 +103,7 @@ public class PacketIO {
 		return data;
 	}
 
-	public static void sendPacket(SocketChannel channel, Header header, Data data) throws Exception {
+	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
 		Packet packet = new Packet(header, data);
 		packet.marshalling(dataBuffer.array(), 0);
 		

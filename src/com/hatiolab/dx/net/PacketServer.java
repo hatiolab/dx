@@ -46,6 +46,7 @@ public class PacketServer {
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
+				key.cancel();
 			}
 		}
 	};

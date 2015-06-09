@@ -1,6 +1,7 @@
 package com.hatiolab.dx.data;
 
-import com.hatiolab.dx.api.DxException;
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
 
@@ -43,10 +44,10 @@ public class FilePartialQuery extends Data {
 	}
 
 	@Override
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + getByteLength() > buf.length)
-			throw new DxException("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.begin = (int)Util.readU32(buf, offset);
 		this.end = (int)Util.readU32(buf, offset + 4);
@@ -56,10 +57,10 @@ public class FilePartialQuery extends Data {
 	}
 
 	@Override
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + getByteLength() > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(this.begin, buf, offset);
 		Util.writeU32(this.end, buf, offset + 4);

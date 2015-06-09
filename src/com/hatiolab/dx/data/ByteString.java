@@ -1,5 +1,6 @@
 package com.hatiolab.dx.data;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import com.hatiolab.dx.net.Util;
@@ -36,15 +37,15 @@ public class ByteString extends Data {
 	}
 
 	@Override
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + 4 > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		len = Util.readU32(buf, offset);
 		
 		if(offset + 4 + len > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.data = Util.readString(buf, offset + 4, (int)len);
 
@@ -52,10 +53,10 @@ public class ByteString extends Data {
 	}
 
 	@Override
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + 4 + len > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(len, buf, offset);
 		

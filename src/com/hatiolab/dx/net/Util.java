@@ -109,7 +109,7 @@ public class Util {
 		buf[offset + 0] = (byte)(0x00FF & (intBits >> 24));
 	}
 	
-	public static final String readString(byte[] buf, int offset, int size) throws Exception {
+	public static final String readString(byte[] buf, int offset, int size) throws IOException {
 		int i = 0;
 		while(i <= size) {
 			if(buf[i + offset] == (byte)0) 
@@ -119,7 +119,7 @@ public class Util {
 		return new String(buf, offset, i >= 0 ? i : size, "UTF-8");
 	}
 
-	public static final void writeString(String data, byte[] buf, int offset, int size) throws Exception {
+	public static final void writeString(String data, byte[] buf, int offset, int size) throws IOException {
 		Arrays.fill(buf, offset, offset + size, (byte)0);
 		byte[] bytes = data.getBytes("UTF-8");
 		System.arraycopy(bytes, 0, buf, offset, bytes.length > size ? size : bytes.length);

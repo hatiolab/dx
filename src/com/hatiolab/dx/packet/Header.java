@@ -1,5 +1,7 @@
 package com.hatiolab.dx.packet;
 
+import java.io.IOException;
+
 import com.hatiolab.dx.net.Marshallable;
 import com.hatiolab.dx.net.Util;
 
@@ -51,10 +53,10 @@ public class Header implements Marshallable {
 		this.code = code;
 	}
 
-	public int unmarshalling(byte[] buf, int offset) throws Exception {
+	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
 		if(offset + getByteLength() > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 		
 		this.len = Util.readU32(buf, offset);
 		this.type = Util.readU8(buf, offset + 4);
@@ -64,10 +66,10 @@ public class Header implements Marshallable {
 		return getByteLength();
 	}
 
-	public int marshalling(byte[] buf, int offset) throws Exception {
+	public int marshalling(byte[] buf, int offset) throws IOException {
 
 		if(offset + getByteLength() > buf.length)
-			throw new Exception("OutOfBound");
+			throw new IOException("OutOfBound");
 
 		Util.writeU32(this.len, buf, offset);
 		Util.writeU8((short)this.type, buf, offset + 4);

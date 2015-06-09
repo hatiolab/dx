@@ -61,6 +61,7 @@ public class DiscoveryClient {
 				
 			} catch (Exception e) {
 				e.printStackTrace();
+				key.cancel();
 			}
 		}
 	};

@@ -197,7 +197,7 @@ public class DxConnect {
 		eventListener.onEvent(new Header(Type.DX_PACKET_TYPE_EVENT, Code.DX_EVT_DISCONNECT, Data.TYPE_NONE), null);
 	}
 	
-	public void sendPacket(Packet packet) throws Exception {
+	public void sendPacket(Packet packet) throws IOException {
 		if(this.socket == null)
 			throw new IOException("Socket is not connected");
 		
