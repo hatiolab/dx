@@ -8,11 +8,14 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.hatiolab.dx.api.EventListener;
+import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.mplexer.EventMultiplexer;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
@@ -59,6 +62,7 @@ public class PacketServerTest {
 		public void onEvent(Header header, Data data) {
 			try {
 				PacketIO.sendPacket(this.channel, header, data);
+				Assert.assertEquals(((Primitive)data).getF32(), 0.1f);
 			} catch (Exception e) {
 				e.printStackTrace();
 			} // Send Back..
@@ -72,10 +76,13 @@ public class PacketServerTest {
 			Header header = new Header();
 			header.setType(Type.DX_PACKET_TYPE_HB);
 			header.setCode((byte)1);
-			header.setDataType(Data.TYPE_NONE);
+			header.setDataType(Data.TYPE_PRIMITIVE);
+			
+			Primitive data = new Primitive();
+			data.setF32(0.1f);
 			
 			try {
-				PacketIO.sendPacket(this.channel, header, null);
+				PacketIO.sendPacket(this.channel, header, data);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
