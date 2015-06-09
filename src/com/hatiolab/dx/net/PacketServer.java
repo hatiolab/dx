@@ -13,7 +13,9 @@ import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 
 public class PacketServer {
-	
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000; 
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
+		
 	protected EventListener eventListener = null;
 	protected int port;
 	
@@ -27,6 +29,11 @@ public class PacketServer {
 					SocketChannel accepted = ((ServerSocketChannel)key.channel()).accept();
 					if(accepted != null) {
 						accepted.configureBlocking(false);
+
+						accepted.socket().setTcpNoDelay(true);
+						accepted.socket().setKeepAlive(true);
+						accepted.socket().setReceiveBufferSize(DEFAULT_SOCKET_RCV_BUF_SIZE);
+						accepted.socket().setSendBufferSize(DEFAULT_SOCKET_SND_BUF_SIZE);
 						
 						SelectionKey registered = accepted.register(key.selector(), SelectionKey.OP_READ);
 						registered.attach(this);
@@ -46,6 +53,11 @@ public class PacketServer {
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
+				try {
+					key.channel().close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				key.cancel();
 			}
 		}

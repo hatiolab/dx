@@ -16,14 +16,13 @@ import com.hatiolab.dx.packet.Packet;
 
 public class DiscoveryClient {
 
-	public static final int DEFAULT_PORT_NUMBER = 2016;
-
 	protected DatagramSocket socket;
 	protected DatagramChannel channel;
 	
-	protected int port;
+	protected int discoveryServerPort;
+	protected int discoveryClientPort;
 	
-	DiscoveryListener discoveryListener;
+	protected DiscoveryListener discoveryListener;
 	
 	protected byte[] headerBuf = new byte[128];
 	protected byte[] dataBuf = new byte[128];
@@ -75,30 +74,39 @@ public class DiscoveryClient {
 		header.setCode((byte)0);
 		header.setDataType(Data.TYPE_PRIMITIVE);
 		
-		data.setS32(this.port);
+		data.setS32(channel.socket().getLocalPort());
 		
 		Packet resp = new Packet(header, data);
 		resp.marshalling(discoveryBuf, 0);
 		
 		/* Send response */
 		ByteBuffer buffer = ByteBuffer.wrap(discoveryBuf, 0, resp.getByteLength());
-		channel.send(buffer, new InetSocketAddress("255.255.255.255", DiscoveryServer.DEFAULT_PORT_NUMBER));//socket().send(packet);
+		channel.send(buffer, new InetSocketAddress("255.255.255.255", this.discoveryServerPort));
 	}
 
 	public DiscoveryClient(DiscoveryListener discoveryListener) throws IOException {
-		this(discoveryListener, DEFAULT_PORT_NUMBER);
+		this(discoveryListener, DiscoveryServer.DEFAULT_PORT_NUMBER, 0);
 	}
 
-	public DiscoveryClient(DiscoveryListener discoveryListener, int port) throws IOException {
+	public DiscoveryClient(DiscoveryListener discoveryListener, int discoveryServerPort, int discoveryClientPort) throws IOException {
 		this.discoveryListener = discoveryListener;
 
-		this.port = port;
+		this.discoveryClientPort = discoveryClientPort;
+		this.discoveryServerPort = discoveryServerPort;
+		
 		channel = DatagramChannel.open();
 		channel.configureBlocking(false);
 		
 		channel.socket().setBroadcast(true);
-		channel.socket().bind(new InetSocketAddress("0.0.0.0", this.port));
+//		if(discoveryClientPort == 0) {
+//			channel.socket().bind(null);
+//			this.discoveryClientPort = channel.socket().getLocalPort();
+//		} else {
+			channel.socket().bind(new InetSocketAddress("0.0.0.0", discoveryClientPort));
+//		}
 		channel.socket().setReuseAddress(true);
+
+		this.discoveryClientPort = channel.socket().getLocalPort();
 	}
 	
 	public void close() throws IOException {

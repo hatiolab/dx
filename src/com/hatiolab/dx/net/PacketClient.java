@@ -12,6 +12,8 @@ import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 
 public class PacketClient {
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000; 
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
 	
 	protected EventListener eventListener = null;
 	protected int port;
@@ -23,9 +25,8 @@ public class PacketClient {
 		@Override
 		public void onSelected(SelectionKey key) {
 			try {
-				int interops = key.interestOps();
-				
-				if(key.isConnectable() && (interops & SelectionKey.OP_CONNECT) != 0) {
+				if(key.isConnectable()) {
+					
 					SocketChannel channel = (SocketChannel)key.channel();
 					if(channel.isConnectionPending()) {
 						if(channel.finishConnect()) {
@@ -51,6 +52,12 @@ public class PacketClient {
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
+				try {
+					close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				key.cancel();
 			}
 		}
 	};
@@ -62,6 +69,11 @@ public class PacketClient {
 		clientSocketChannel = SocketChannel.open();
 		clientSocketChannel.configureBlocking(false);
 		clientSocketChannel.connect(new InetSocketAddress(host, this.port));
+		
+		clientSocketChannel.socket().setTcpNoDelay(true);
+		clientSocketChannel.socket().setKeepAlive(true);
+		clientSocketChannel.socket().setReceiveBufferSize(DEFAULT_SOCKET_RCV_BUF_SIZE);
+		clientSocketChannel.socket().setSendBufferSize(DEFAULT_SOCKET_SND_BUF_SIZE);
 	}
 
 	public void close() throws IOException {

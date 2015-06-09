@@ -23,12 +23,34 @@ import com.hatiolab.dx.packet.Packet;
 
 public class PacketIO {
 	static final protected Header header = new Header();
-	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(header.getByteLength());
+	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(8);
 	static final protected ByteBuffer dataBuffer = ByteBuffer.allocate(2 * 1024 * 1024);
+	
+	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
+		int remaining = buffer.remaining();
+		int sz = channel.read(buffer);
+		
+		if(sz != remaining)
+			throw new IOException("Can't read all remainings (" + sz + " of " + remaining + ")");
+		
+		return sz;
+	}
+	
+	public static int write(SocketChannel channel, ByteBuffer buffer) throws IOException {
+		int remaining = buffer.remaining();
+		int sz = channel.write(buffer);
+		
+		if(sz != remaining)
+			throw new IOException("Can't write all remainings (" + sz + " of " + remaining + ")");
+		
+		return sz;
+	}
 
 	public static Header parseHeader(SocketChannel channel) throws Exception {
-		channel.read(headerBuffer);
-		headerBuffer.flip();
+
+		headerBuffer.clear();
+
+		read(channel, headerBuffer);
 		
 		header.unmarshalling(headerBuffer.array(), 0);
 		
@@ -45,8 +67,7 @@ public class PacketIO {
 			dataBuffer.limit((int)dataLength);
 			dataBuffer.position(0);
 
-			channel.read(dataBuffer);
-			dataBuffer.flip();
+			read(channel, dataBuffer);
 		}
 
 		Data data = null;
@@ -107,10 +128,10 @@ public class PacketIO {
 		Packet packet = new Packet(header, data);
 		packet.marshalling(dataBuffer.array(), 0);
 		
-		dataBuffer.limit(packet.getByteLength());
 		dataBuffer.position(0);
+		dataBuffer.limit(packet.getByteLength());
 		
 		/* Send response */
-		channel.write(dataBuffer);
+		write(channel, dataBuffer);
 	}
 }

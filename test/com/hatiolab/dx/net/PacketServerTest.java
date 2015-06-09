@@ -88,12 +88,17 @@ public class PacketServerTest {
 	class ServerDiscoveryListener implements DiscoveryListener {
 
 		@Override
-		public void onFoundServer(InetAddress address, int port) throws IOException {
-			packetClient = new PacketClient(new ClientEventListener(), address.getHostAddress(), port);
+		public void onFoundServer(InetAddress address, int port) {
+			try {
+				packetClient = new PacketClient(new ClientEventListener(), address.getHostAddress(), port);
 
-			SelectableChannel channel = packetClient.getSelectableChannel();
-			SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
-			key.attach(packetClient.getSelectableHandler());
+				SelectableChannel channel = packetClient.getSelectableChannel();
+				SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
+				key.attach(packetClient.getSelectableHandler());
+			} catch (IOException e) {
+				e.printStackTrace();
+				packetClient = null;
+			}
 		}
 	}
 

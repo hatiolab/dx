@@ -23,7 +23,7 @@ public class DiscoveryServer {
 	protected byte[] headerBuf = new byte[128];
 	protected byte[] dataBuf = new byte[128];
 	protected byte[] respBuf = new byte[128];
-	protected ByteBuffer buffer = ByteBuffer.allocate(100);
+	protected ByteBuffer buffer = ByteBuffer.allocate(12);
 
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
