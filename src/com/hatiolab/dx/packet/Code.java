@@ -2,13 +2,19 @@ package com.hatiolab.dx.packet;
 
 public class Code {
 	
+    /* Discovery */
+
+    public final static int DX_DISCOVERY_BASE               = 0x00;
+    public final static int DX_DISCOVERY_REQUEST            = (DX_DISCOVERY_BASE + 0);
+    public final static int DX_DISCOVERY_RESPONSE           = (DX_DISCOVERY_BASE + 1);
+
     /* Persistent Settings */
 
-    public final static int OD_SETTING_BASE             = 0x00;
+    public final static int DX_SETTING_BASE                 = 0x00;
 
     /* Volatile Status - 상태 */
 
-    public final static int OD_STAT_BASE                    = 0x00;
+    public final static int DX_STAT_BASE                    = 0x00;
 
     /* Event Types */
 

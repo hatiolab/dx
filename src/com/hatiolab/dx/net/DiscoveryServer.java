@@ -9,9 +9,11 @@ import java.nio.channels.SelectionKey;
 
 import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.mplexer.SelectableHandler;
+import com.hatiolab.dx.packet.Code;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
+import com.hatiolab.dx.packet.Type;
 
 public class DiscoveryServer {
 	
@@ -53,7 +55,8 @@ public class DiscoveryServer {
 					data.unmarshalling(dataBuf, 0);
 					int clientport = data.getS32();
 					
-					header.setCode((byte)1);
+					header.setType(Type.DX_PACKET_TYPE_DISCOVERY);
+					header.setCode((byte)Code.DX_DISCOVERY_RESPONSE);
 					data.setS32(packetServerPort);
 					
 					/* Response packet marshalling */

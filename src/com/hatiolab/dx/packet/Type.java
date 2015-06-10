@@ -2,7 +2,11 @@ package com.hatiolab.dx.packet;
 
 public class Type {
 
-	/* Packet Type */
+	/* Packet Type for Broadcast */
+
+    public final static int DX_PACKET_TYPE_DISCOVERY		= 0;	/* Discovery */
+    
+	/* Packet Type for P2P */
 
     public final static int DX_PACKET_TYPE_HB				= 0;	/* Heart Beat */
     public final static int DX_PACKET_TYPE_GET_SETTING		= 1;	/* Get Setting */

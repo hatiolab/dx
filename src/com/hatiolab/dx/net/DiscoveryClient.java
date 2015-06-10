@@ -10,9 +10,11 @@ import java.nio.channels.SelectionKey;
 
 import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.mplexer.SelectableHandler;
+import com.hatiolab.dx.packet.Code;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
+import com.hatiolab.dx.packet.Type;
 
 public class DiscoveryClient {
 
@@ -69,8 +71,8 @@ public class DiscoveryClient {
 		Header header = new Header();
 		Primitive data = new Primitive();
 		
-		header.setType(0);
-		header.setCode((byte)0);
+		header.setType(Type.DX_PACKET_TYPE_DISCOVERY);
+		header.setCode((byte)Code.DX_DISCOVERY_REQUEST);
 		header.setDataType(Data.TYPE_PRIMITIVE);
 		
 		data.setS32(channel.socket().getLocalPort());
