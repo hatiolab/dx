@@ -23,7 +23,7 @@ public class DxClient {
 	public void start(int discoveryServicePort, DiscoveryListener eventListener) throws Exception {
 		mplexer = new EventMultiplexer();
 
-		discoveryClient = new DiscoveryClient(eventListener, DxServer.DISCOVERY_SERVICE_PORT, 0);
+		discoveryClient = new DiscoveryClient(eventListener, discoveryServicePort, 0);
 		
 		SelectableChannel channel = discoveryClient.getSelectableChannel();
 		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);

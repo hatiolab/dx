@@ -36,7 +36,8 @@ public class DxClientTest {
 		};
 		
 		try {
-			client.start(Server.DISCOVERY_SERVICE_PORT, discoveryListener);
+//			client.start(Server.DISCOVERY_SERVICE_PORT, discoveryListener);
+			client.start(3456, discoveryListener);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

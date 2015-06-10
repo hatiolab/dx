@@ -21,7 +21,7 @@ public class PacketClientListener implements PacketEventListener {
 	@Override
 	public void onEvent(Header header, Data data) throws IOException {
 		PacketIO.sendPacket(this.channel, header, data);
-		System.out.println("HELLO, CLIENT : " + ((Primitive)data).getF32());			
+		System.out.println("HELLO, CLIENT");			
 	}
 	
 	@Override

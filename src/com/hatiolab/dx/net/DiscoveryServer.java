@@ -18,7 +18,9 @@ public class DiscoveryServer {
 	public static final int DEFAULT_PORT_NUMBER = 2015;
 	
 	protected DatagramChannel channel;
-	protected int port = DEFAULT_PORT_NUMBER;
+	
+	protected int discoveryServerPort;
+	protected int packetServerPort;
 	
 	protected byte[] headerBuf = new byte[128];
 	protected byte[] dataBuf = new byte[128];
@@ -52,7 +54,7 @@ public class DiscoveryServer {
 					int clientport = data.getS32();
 					
 					header.setCode((byte)1);
-					data.setS32(port);
+					data.setS32(packetServerPort);
 					
 					/* Response packet marshalling */
 					Packet resp = new Packet(header, data);
@@ -73,14 +75,23 @@ public class DiscoveryServer {
 		this(DEFAULT_PORT_NUMBER);
 	}
 	
-	public DiscoveryServer(int port) throws IOException {
-		this.port = port;
+	public DiscoveryServer(int discoveryServerPort) throws IOException {
+		/*
+		 *  통상 discovery service port와 packet service port는 동일한 port number를 사용한다고 가정함
+		 *  Port number는 동일하지만, Discovery Service는 UDP, Packet Service는 TCP를 사용함. 
+		 */
+		this(discoveryServerPort, discoveryServerPort);
+	}
+	
+	public DiscoveryServer(int discoveryServerPort, int packetServerPort) throws IOException {
+		this.discoveryServerPort = discoveryServerPort;
+		this.packetServerPort = packetServerPort;
 		
 		channel = DatagramChannel.open();
 		channel.configureBlocking(false);
 		
 		channel.socket().setBroadcast(true);
-		channel.socket().bind(new InetSocketAddress("0.0.0.0", this.port));
+		channel.socket().bind(new InetSocketAddress("0.0.0.0", this.discoveryServerPort));
 		channel.socket().setReuseAddress(true);
 	}
 	
