@@ -17,6 +17,7 @@ import com.hatiolab.dx.data.S32Array;
 import com.hatiolab.dx.data.Stream;
 import com.hatiolab.dx.data.U16Array;
 import com.hatiolab.dx.data.U32Array;
+import com.hatiolab.dx.net.PacketEventListener;
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Code;
 import com.hatiolab.dx.packet.Data;
@@ -36,7 +37,7 @@ public class DxConnect {
 	
 	private String hostname;
 	private int port;
-	private EventListener eventListener;
+	private PacketEventListener eventListener;
 	private int state;
 	private int sendBufferSize = DEFAULT_SOCKET_SND_BUF_SIZE;
 	private int recvBufferSize = DEFAULT_SOCKET_RCV_BUF_SIZE;
@@ -61,7 +62,7 @@ public class DxConnect {
 		this.sendBufferSize = sendBufferSize;
 	}
 
-	public void setEventListener(EventListener eventListener) {
+	public void setEventListener(PacketEventListener eventListener) {
 		this.eventListener = eventListener;
 	}
 	

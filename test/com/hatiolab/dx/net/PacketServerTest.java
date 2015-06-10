@@ -14,7 +14,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.hatiolab.dx.api.EventListener;
 import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.mplexer.EventMultiplexer;
 import com.hatiolab.dx.packet.Data;
@@ -30,7 +29,7 @@ public class PacketServerTest {
 	DiscoveryServer discoveryServer;
 	DiscoveryClient discoveryClient;
 
-	class ServerEventListener implements EventListener {
+	class ServerEventListener implements PacketEventListener {
 		SocketChannel channel;
 		
 		@Override
@@ -51,7 +50,7 @@ public class PacketServerTest {
 		
 	}
 	
-	class ClientEventListener implements EventListener {
+	class ClientEventListener implements PacketEventListener {
 		SocketChannel channel;
 		
 		@Override

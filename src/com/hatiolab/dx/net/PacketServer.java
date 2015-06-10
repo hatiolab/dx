@@ -7,7 +7,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import com.hatiolab.dx.api.EventListener;
 import com.hatiolab.dx.mplexer.SelectableHandler;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
@@ -16,7 +15,7 @@ public class PacketServer {
 	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000; 
 	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
 		
-	protected EventListener eventListener = null;
+	protected PacketEventListener eventListener = null;
 	protected int port;
 	
 	protected ServerSocketChannel serverSocketChannel;
@@ -63,7 +62,7 @@ public class PacketServer {
 		}
 	};
 	
-	public PacketServer(EventListener eventListener, int port) throws IOException {
+	public PacketServer(PacketEventListener eventListener, int port) throws IOException {
 		this.eventListener = eventListener;
 		this.port = port;
 		
