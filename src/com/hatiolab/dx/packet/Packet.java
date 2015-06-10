@@ -1,6 +1,7 @@
 package com.hatiolab.dx.packet;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Marshallable;
 
@@ -51,6 +52,16 @@ public class Packet implements Marshallable {
 			len += data.marshalling(buf, offset + len);
 		
 		return len;
+	}
+
+	@Override
+	public int unmarshalling(ByteBuffer buf, int offset) throws IOException {
+		return 0;
+	}
+
+	@Override
+	public int marshalling(ByteBuffer buf, int offset) throws IOException {
+		return 0;
 	}
 
 	public int getByteLength() {

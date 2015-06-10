@@ -124,6 +124,10 @@ public class PacketIO {
 		return data;
 	}
 
+	public static void sendPacket(SocketChannel channel, Packet packet) throws IOException {
+		sendPacket(channel, packet.getHeader(), packet.getData());
+	}
+	
 	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
 		Packet packet = new Packet(header, data);
 		packet.marshalling(dataBuffer.array(), 0);

@@ -10,8 +10,12 @@ import com.hatiolab.dx.net.DiscoveryClient;
 import com.hatiolab.dx.net.DiscoveryListener;
 import com.hatiolab.dx.net.PacketClient;
 import com.hatiolab.dx.net.PacketEventListener;
+import com.hatiolab.dx.net.PacketSender;
+import com.hatiolab.dx.packet.Data;
+import com.hatiolab.dx.packet.Header;
+import com.hatiolab.dx.packet.Packet;
 
-public class DxClient {
+public class DxClient implements PacketSender {
 	
 	protected EventMultiplexer mplexer;
 
@@ -63,5 +67,21 @@ public class DxClient {
 			}
 			packetClient = null;
 		}
+	}
+	
+	@Override
+	public void sendPacket(Header header, Data data) throws IOException {
+		if(packetClient == null)
+			throw new IOException("Packet Client is not ready.");
+		
+		packetClient.sendPacket(header, data);
+	}
+
+	@Override
+	public void sendPacket(Packet packet) throws IOException {
+		if(packetClient == null)
+				throw new IOException("Packet Client is not ready.");
+			
+		packetClient.sendPacket(packet);
 	}
 }

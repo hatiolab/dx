@@ -1,6 +1,7 @@
 package com.hatiolab.dx.packet;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Marshallable;
 
@@ -28,11 +29,23 @@ public class Data implements Marshallable {
 
 	public static final int TYPE_STREAM		=		41;		/* Streaming Data */
 
+	@Override
 	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		return 0;
 	}
-
+	
+	@Override
 	public int marshalling(byte[] buf, int offset) throws IOException {
+		return 0;
+	}
+
+	@Override
+	public int unmarshalling(ByteBuffer buf, int offset) throws IOException {
+		return 0;
+	}
+
+	@Override
+	public int marshalling(ByteBuffer buf, int offset) throws IOException {
 		return 0;
 	}
 
@@ -43,4 +56,5 @@ public class Data implements Marshallable {
 	public int getDataType() {
 		return TYPE_NONE;
 	}
+
 }
