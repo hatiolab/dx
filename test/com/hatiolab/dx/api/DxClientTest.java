@@ -27,7 +27,7 @@ public class DxClientTest {
 	@Test
 	public void test() {
 		try {
-			EventMultiplexer mplexer = new EventMultiplexer();
+			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 			
 			client = new DxClient(mplexer, 3456, new DiscoveryListener() {
 				@Override

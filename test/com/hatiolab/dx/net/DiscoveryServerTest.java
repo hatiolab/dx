@@ -20,7 +20,7 @@ public class DiscoveryServerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mplexer = new EventMultiplexer();
+		mplexer = EventMultiplexer.getInstance();
 		discoveryServer = new DiscoveryServer(0, 0);
 		discoveryClient = new DiscoveryClient(new DiscoveryListener() {
 			@Override

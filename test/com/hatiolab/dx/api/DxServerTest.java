@@ -24,7 +24,7 @@ public class DxServerTest {
 	public void test() {
 		
 		try {
-			EventMultiplexer mplexer = new EventMultiplexer();
+			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 
 			DxServer server = new DxServer(mplexer, 0, 3456, new PacketServerListener());
 

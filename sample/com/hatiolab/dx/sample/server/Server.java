@@ -13,7 +13,7 @@ public class Server {
 	public static void main() {
 
 		try {
-			EventMultiplexer mplexer = new EventMultiplexer();
+			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 
 			DxServer server = new DxServer(mplexer, PACKET_SERVICE_PORT, DISCOVERY_SERVICE_PORT, new PacketServerListener());
 

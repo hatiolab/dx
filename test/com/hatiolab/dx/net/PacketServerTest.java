@@ -99,7 +99,7 @@ public class PacketServerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		mplexer = new EventMultiplexer();
+		mplexer = EventMultiplexer.getInstance();
 
 		packetServer = new PacketServer(new ServerEventListener(), 2015);
 		

@@ -25,7 +25,7 @@ public class Client {
 	public static void main() {
 		
 		try {
-			EventMultiplexer mplexer = new EventMultiplexer();
+			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 			
 			client = new DxClient(mplexer, Server.DISCOVERY_SERVICE_PORT, discoveryListener);
 			
