@@ -30,18 +30,16 @@ public class PacketServerTest {
 	DiscoveryClient discoveryClient;
 
 	class ServerEventListener implements PacketEventListener {
-		SocketChannel channel;
-		
+
 		@Override
-		public void onEvent(Header header, Data data) throws IOException {
+		public void onEvent(SocketChannel channel, Header header, Data data) throws IOException {
 			System.out.println("HELLO, SERVER");			
 
-			PacketIO.sendPacket(this.channel, header, data); // Send Back..
+			PacketIO.sendPacket(channel, header, data); // Send Back..
 		}
 		
 		@Override
 		public void onConnected(SocketChannel channel) {
-			this.channel = channel;
 		}
 		
 		@Override
@@ -51,18 +49,16 @@ public class PacketServerTest {
 	}
 	
 	class ClientEventListener implements PacketEventListener {
-		SocketChannel channel;
-		
+
 		@Override
-		public void onEvent(Header header, Data data) throws IOException {
-			PacketIO.sendPacket(this.channel, header, data);
+		public void onEvent(SocketChannel channel, Header header, Data data) throws IOException {
+			PacketIO.sendPacket(channel, header, data);
 			Assert.assertEquals(((Primitive)data).getF32(), 0.1f);
 			System.out.println("HELLO, CLIENT");			
 		}
 		
 		@Override
 		public void onConnected(SocketChannel channel) {
-			this.channel = channel;
 			
 			Header header = new Header();
 			header.setType(Type.DX_PACKET_TYPE_HB);
@@ -73,7 +69,7 @@ public class PacketServerTest {
 			data.setF32(0.1f);
 			
 			try {
-				PacketIO.sendPacket(this.channel, header, data);
+				PacketIO.sendPacket(channel, header, data);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -105,22 +101,23 @@ public class PacketServerTest {
 	public void setUp() throws Exception {
 		mplexer = new EventMultiplexer();
 
-		discoveryServer = new DiscoveryServer();
+		packetServer = new PacketServer(new ServerEventListener(), 2015);
+		
+		SelectableChannel channel = packetServer.getSelectableChannel();
+		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_ACCEPT);
+		key.attach(packetServer.getSelectableHandler());
+
+		discoveryServer = new DiscoveryServer(DiscoveryServer.DEFAULT_PORT_NUMBER, packetServer.getServicePort());
 		discoveryClient = new DiscoveryClient(new ServerDiscoveryListener());
 		
-		SelectableChannel channel = discoveryServer.getSelectableChannel();
-		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
+		channel = discoveryServer.getSelectableChannel();
+		key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
 		key.attach(discoveryServer.getSelectableHandler());
 		
 		channel = discoveryClient.getSelectableChannel();
 		key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
 		key.attach(discoveryClient.getSelectableHandler());		
 		
-		packetServer = new PacketServer(new ServerEventListener(), 2015);
-		
-		channel = packetServer.getSelectableChannel();
-		key = channel.register(mplexer.getSelector(), SelectionKey.OP_ACCEPT);
-		key.attach(packetServer.getSelectableHandler());
 	}
 
 	@After

@@ -9,9 +9,8 @@ import java.nio.channels.SocketChannel;
 import com.hatiolab.dx.mplexer.SelectableHandler;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
-import com.hatiolab.dx.packet.Packet;
 
-public class PacketClient implements PacketSender {
+public class PacketClient {
 	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000; 
 	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
 	
@@ -47,7 +46,7 @@ public class PacketClient implements PacketSender {
 					Header header = PacketIO.parseHeader(channel);
 					Data data = PacketIO.parseData(channel, header);
 
-					eventListener.onEvent(header, data);					
+					eventListener.onEvent(channel, header, data);					
 		
 				}
 			} catch(Exception e) {
@@ -94,14 +93,4 @@ public class PacketClient implements PacketSender {
 		return connected;
 	}
 
-	public void sendPacket(Header header, Data data) throws IOException {
-		if(clientSocketChannel == null || !clientSocketChannel.isConnected())
-			throw new IOException("SocketChannel is not connected.");
-
-		PacketIO.sendPacket(clientSocketChannel, header, data);
-	}
-	
-	public void sendPacket(Packet packet) throws IOException {
-		sendPacket(packet.getHeader(), packet.getData());
-	}
 }

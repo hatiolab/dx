@@ -21,7 +21,7 @@ public class DiscoveryServerTest {
 	@Before
 	public void setUp() throws Exception {
 		mplexer = new EventMultiplexer();
-		discoveryServer = new DiscoveryServer();
+		discoveryServer = new DiscoveryServer(0, 0);
 		discoveryClient = new DiscoveryClient(new DiscoveryListener() {
 			@Override
 			public void onFoundServer(InetAddress address, int port) {

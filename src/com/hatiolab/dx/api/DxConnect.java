@@ -142,7 +142,7 @@ public class DxConnect {
 
 						data.unmarshalling(dataBuf, 0);
 
-						eventListener.onEvent(header, data);
+						eventListener.onEvent(null, header, data);
 
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -195,7 +195,7 @@ public class DxConnect {
 		this.socket.close();
 		this.socket = null;
 		
-		eventListener.onEvent(new Header(Type.DX_PACKET_TYPE_EVENT, Code.DX_EVT_DISCONNECT, Data.TYPE_NONE), null);
+		eventListener.onDisconnected(null);
 	}
 	
 	public void sendPacket(Packet packet) throws IOException {

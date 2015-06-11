@@ -74,28 +74,17 @@ public class DiscoveryServer {
 		}
 	};
 
-	public DiscoveryServer() throws IOException {
-		this(DEFAULT_PORT_NUMBER);
-	}
-	
-	public DiscoveryServer(int discoveryServerPort) throws IOException {
-		/*
-		 *  통상 discovery service port와 packet service port는 동일한 port number를 사용한다고 가정함
-		 *  Port number는 동일하지만, Discovery Service는 UDP, Packet Service는 TCP를 사용함. 
-		 */
-		this(discoveryServerPort, discoveryServerPort);
-	}
-	
 	public DiscoveryServer(int discoveryServerPort, int packetServerPort) throws IOException {
-		this.discoveryServerPort = discoveryServerPort;
 		this.packetServerPort = packetServerPort;
 		
 		channel = DatagramChannel.open();
 		channel.configureBlocking(false);
 		
 		channel.socket().setBroadcast(true);
-		channel.socket().bind(new InetSocketAddress("0.0.0.0", this.discoveryServerPort));
+		channel.socket().bind(new InetSocketAddress("0.0.0.0", discoveryServerPort));
 		channel.socket().setReuseAddress(true);
+		
+		this.discoveryServerPort = channel.socket().getLocalPort();
 	}
 	
 	public void close() throws IOException {

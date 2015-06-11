@@ -10,41 +10,34 @@ import com.hatiolab.dx.net.DiscoveryClient;
 import com.hatiolab.dx.net.DiscoveryListener;
 import com.hatiolab.dx.net.PacketClient;
 import com.hatiolab.dx.net.PacketEventListener;
-import com.hatiolab.dx.net.PacketSender;
-import com.hatiolab.dx.packet.Data;
-import com.hatiolab.dx.packet.Header;
-import com.hatiolab.dx.packet.Packet;
 
-public class DxClient implements PacketSender {
+public class DxClient {
 	
 	protected EventMultiplexer mplexer;
 
 	protected PacketClient packetClient;
 	protected DiscoveryClient discoveryClient;
 	
-	public DxClient() {}
-
-	public void start(int discoveryServicePort, DiscoveryListener eventListener) throws Exception {
-		mplexer = new EventMultiplexer();
+	public DxClient(EventMultiplexer mplexer, int discoveryServicePort, DiscoveryListener eventListener) throws Exception {
+		this.mplexer = mplexer;
 
 		discoveryClient = new DiscoveryClient(eventListener, discoveryServicePort, 0);
 		
 		SelectableChannel channel = discoveryClient.getSelectableChannel();
 		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
 		key.attach(discoveryClient.getSelectableHandler());	
-		
-		while(true) {
-			mplexer.poll(1000);
-
-			if(packetClient == null || packetClient.isConnected() == false) {
-				discoveryClient.sendDiscoveryPacket();
-			}
-		}
 	}
 
-	public void stop() throws Exception {
-		mplexer.close();
+	public void close() throws Exception {
 		discoveryClient.close();
+	}
+
+	public boolean isConnected() {
+		return packetClient != null && packetClient.isConnected();
+	}
+	
+	public void discovery() throws Exception {
+		discoveryClient.sendDiscoveryPacket();
 	}
 	
 	public void startPacketClient(InetAddress address, int port, PacketEventListener eventListener) {
@@ -67,21 +60,5 @@ public class DxClient implements PacketSender {
 			}
 			packetClient = null;
 		}
-	}
-	
-	@Override
-	public void sendPacket(Header header, Data data) throws IOException {
-		if(packetClient == null)
-			throw new IOException("Packet Client is not ready.");
-		
-		packetClient.sendPacket(header, data);
-	}
-
-	@Override
-	public void sendPacket(Packet packet) throws IOException {
-		if(packetClient == null)
-				throw new IOException("Packet Client is not ready.");
-			
-		packetClient.sendPacket(packet);
 	}
 }

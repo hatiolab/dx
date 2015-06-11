@@ -16,7 +16,7 @@ public class PacketServer {
 	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
 		
 	protected PacketEventListener eventListener = null;
-	protected int port;
+	protected int servicePort;
 	
 	protected ServerSocketChannel serverSocketChannel;
 
@@ -48,7 +48,7 @@ public class PacketServer {
 					Header header = PacketIO.parseHeader(channel);
 					Data data = PacketIO.parseData(channel, header);
 
-					eventListener.onEvent(header, data);					
+					eventListener.onEvent(channel, header, data);					
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -64,12 +64,13 @@ public class PacketServer {
 	
 	public PacketServer(PacketEventListener eventListener, int port) throws IOException {
 		this.eventListener = eventListener;
-		this.port = port;
 		
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.socket().bind(new InetSocketAddress("0.0.0.0", this.port));
+		serverSocketChannel.socket().bind(new InetSocketAddress("0.0.0.0", port));
 		serverSocketChannel.socket().setReuseAddress(true);
+		
+		this.servicePort = serverSocketChannel.socket().getLocalPort();
 	}
 
 	public void close() throws IOException {
@@ -83,6 +84,10 @@ public class PacketServer {
 
 	public SelectableHandler getSelectableHandler() {
 		return selectableHandler;
+	}
+
+	public int getServicePort() {
+		return servicePort;
 	}
 
 }

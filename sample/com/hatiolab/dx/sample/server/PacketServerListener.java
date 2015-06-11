@@ -14,18 +14,15 @@ public class PacketServerListener implements PacketEventListener {
 		// TODO Auto-generated constructor stub
 	}
 
-	SocketChannel channel;
-	
 	@Override
-	public void onEvent(Header header, Data data) throws IOException {
+	public void onEvent(SocketChannel channel, Header header, Data data) throws IOException {
 		System.out.println("HELLO, SERVER");			
 
-		PacketIO.sendPacket(this.channel, header, data); // Send Back..
+		PacketIO.sendPacket(channel, header, data); // Send Back..
 	}
 	
 	@Override
 	public void onConnected(SocketChannel channel) {
-		this.channel = channel;
 	}
 	
 	@Override

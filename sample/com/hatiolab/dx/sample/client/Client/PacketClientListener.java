@@ -12,21 +12,18 @@ import com.hatiolab.dx.packet.Type;
 
 public class PacketClientListener implements PacketEventListener {
 
-	protected SocketChannel channel;
-
 	public PacketClientListener() {
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public void onEvent(Header header, Data data) throws IOException {
-		PacketIO.sendPacket(this.channel, header, data);
+	public void onEvent(SocketChannel channel, Header header, Data data) throws IOException {
+		PacketIO.sendPacket(channel, header, data);
 		System.out.println("HELLO, CLIENT");			
 	}
 	
 	@Override
 	public void onConnected(SocketChannel channel) {
-		this.channel = channel;
 		
 		Header header = new Header();
 		header.setType(Type.DX_PACKET_TYPE_HB);
@@ -37,7 +34,7 @@ public class PacketClientListener implements PacketEventListener {
 		data.setF32(0.1f);
 		
 		try {
-			PacketIO.sendPacket(this.channel, header, data);
+			PacketIO.sendPacket(channel, header, data);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

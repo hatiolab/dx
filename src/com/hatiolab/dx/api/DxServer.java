@@ -19,12 +19,11 @@ public class DxServer {
 	PacketServer packetServer;
 	DiscoveryServer discoveryServer;
 	
-	public DxServer() {}
-
-	public void start(int packetServicePort, int discoveryServicePort, PacketEventListener eventListener) throws IOException {
-		mplexer = new EventMultiplexer();
-		discoveryServer = new DiscoveryServer(discoveryServicePort);
+	public DxServer(EventMultiplexer mplexer, int packetServicePort, int discoveryServicePort, PacketEventListener eventListener) throws IOException {
+		this.mplexer = mplexer;
+		
 		packetServer = new PacketServer(eventListener, packetServicePort);
+		discoveryServer = new DiscoveryServer(discoveryServicePort, packetServer.getServicePort());
 
 		SelectableChannel channel = discoveryServer.getSelectableChannel();
 		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
@@ -33,15 +32,11 @@ public class DxServer {
 		channel = packetServer.getSelectableChannel();
 		key = channel.register(mplexer.getSelector(), SelectionKey.OP_ACCEPT);
 		key.attach(packetServer.getSelectableHandler());
-		
-		while(true) {
-			mplexer.poll(1000);
-		}
 	}
-	
+
 	public void close() throws Exception {
-		mplexer.close();
 		packetServer.close();
 		discoveryServer.close();
 	}
+	
 }
