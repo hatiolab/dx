@@ -41,7 +41,7 @@ public class DxClient {
 	}
 	
 	public void startPacketClient(InetAddress address, int port, PacketEventListener eventListener) {
-		if(packetClient != null && packetClient.isConnected())
+		if(packetClient != null)
 			return;
 		
 		try {
