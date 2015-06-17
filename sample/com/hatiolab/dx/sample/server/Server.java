@@ -17,6 +17,8 @@ public class Server {
 
 			DxServer server = new DxServer(mplexer, PACKET_SERVICE_PORT, DISCOVERY_SERVICE_PORT, new PacketServerListener());
 
+			server.start();
+			
 			while(true) {
 				mplexer.poll(1000);
 			}

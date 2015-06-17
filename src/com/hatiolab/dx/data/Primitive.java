@@ -1,6 +1,7 @@
 package com.hatiolab.dx.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
@@ -96,6 +97,22 @@ public class Primitive extends Data {
 		System.arraycopy(this.buf, 0, buf, offset, 4);
 		
 		return getByteLength();
+	}
+
+	@Override
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		buf.get(this.buf);
+	}
+
+	@Override
+	public void marshalling(ByteBuffer buf) throws IOException {
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		buf.put(this.buf);
 	}
 
 	@Override

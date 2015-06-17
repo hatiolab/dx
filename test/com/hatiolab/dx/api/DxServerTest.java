@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import com.hatiolab.dx.mplexer.EventMultiplexer;
 import com.hatiolab.dx.sample.server.PacketServerListener;
-import com.hatiolab.dx.sample.server.Server;
 
 public class DxServerTest {
 
@@ -26,12 +25,14 @@ public class DxServerTest {
 		try {
 			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 
-			DxServer server = new DxServer(mplexer, 0, 3456, new PacketServerListener());
+			DxServer server = new DxServer(mplexer, 0, 3478, new PacketServerListener());
 
+			server.start();
+			
 			while(true) {
 				mplexer.poll(1000);
 			}
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}

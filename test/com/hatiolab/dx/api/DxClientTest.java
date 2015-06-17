@@ -1,5 +1,6 @@
 package com.hatiolab.dx.api;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 import org.junit.After;
@@ -29,12 +30,19 @@ public class DxClientTest {
 		try {
 			EventMultiplexer mplexer = EventMultiplexer.getInstance();
 			
-			client = new DxClient(mplexer, 3456, new DiscoveryListener() {
+			client = new DxClient(mplexer, 3478, new DiscoveryListener() {
 				@Override
 				public void onFoundServer(InetAddress address, int port) {
-					client.startPacketClient(address, port, packetEventListener);
+					try {
+						client.startPacketClient(address, port, packetEventListener);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			});
+			
+			client.start();
 		
 			while(true) {
 				mplexer.poll(1000);

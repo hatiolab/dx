@@ -14,6 +14,8 @@ import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 
 public class PacketClient {
+	public static final String TAG = "PacketClient";
+	
 	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 * 3; 
 	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 * 3;
 	
@@ -36,10 +38,10 @@ public class PacketClient {
 						if(channel.finishConnect()) {
 							
 							PacketClient.this.connected = true;
-							
-							eventListener.onConnected(channel);
 
 							key.interestOps(SelectionKey.OP_READ);
+							
+							eventListener.onConnected(channel);
 						}
 					}
 				}
@@ -48,8 +50,7 @@ public class PacketClient {
 					SocketChannel channel = (SocketChannel)key.channel();
 
 					if (packetBuf.position() == 0) {
-						int i = channel.read(packetLength);
-						Log.d("Length1: ", "" + i);
+						PacketIO.read(channel, packetLength);
 						packetLength.flip();
 						long length = Util.readU32(packetLength);
 						packetLength.flip();
@@ -59,12 +60,14 @@ public class PacketClient {
 						packetLength.clear();
 					}
 					
-					int j = channel.read(packetBuf);
-					Log.d("Length2: ", "" + j);
-					
+					PacketIO.read(channel, packetBuf);
+
 					if (packetBuf.hasRemaining()) {
 						return;
 					}
+					
+//					Log.d(TAG, "Read a full packet data.");
+					
 					packetBuf.flip();
 					
 					Header header = PacketIO.parseHeader(packetBuf);

@@ -25,35 +25,26 @@ public class DiscoveryClient {
 	
 	protected DiscoveryListener discoveryListener;
 	
-	protected byte[] headerBuf = new byte[128];
-	protected byte[] dataBuf = new byte[128];
-	protected byte[] discoveryBuf = new byte[128];
-	protected ByteBuffer buffer = ByteBuffer.allocate(100);
+	protected ByteBuffer buffer = ByteBuffer.allocate(12);
+	protected Header header = new Header();
 
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
 		public void onSelected(SelectionKey key) {
 			try {
-				buffer.position(0);
+				buffer.clear();
 				InetSocketAddress addr = (InetSocketAddress)channel.receive(buffer);
 				buffer.flip();
 				
 				/* Header unmarshalling */
-				Header header = new Header();
-				buffer.get(headerBuf, 0, header.getByteLength());
-				header.unmarshalling(headerBuf, 0);
+				header.unmarshalling(buffer);
 				
-				long dataLength = header.getLen() - header.getByteLength();
-				if(dataLength > 0) {
-					buffer.get(dataBuf, 0, (int)dataLength);
-				}
-
 				if(Data.TYPE_PRIMITIVE == header.getDataType() && 1 == header.getCode()) {
-					// Must be discovery response packet
+					// Should be discovery response packet
 
 					/* Data unmarshalling */
 					Primitive data = new Primitive();
-					data.unmarshalling(dataBuf, 0);
+					data.unmarshalling(buffer);
 					int serverport = data.getS32();
 					
 					DiscoveryClient.this.discoveryListener.onFoundServer(addr.getAddress(), serverport);
@@ -78,11 +69,7 @@ public class DiscoveryClient {
 		data.setS32(channel.socket().getLocalPort());
 		
 		Packet resp = new Packet(header, data);
-		resp.marshalling(discoveryBuf, 0);
-		
-		/* Send response */
-		ByteBuffer buffer = ByteBuffer.wrap(discoveryBuf, 0, resp.getByteLength());
-		channel.send(buffer, new InetSocketAddress("255.255.255.255", this.discoveryServerPort));
+		PacketIO.sendPacketTo(channel, resp, new InetSocketAddress("255.255.255.255", this.discoveryServerPort));
 	}
 
 	public DiscoveryClient(DiscoveryListener discoveryListener) throws IOException {

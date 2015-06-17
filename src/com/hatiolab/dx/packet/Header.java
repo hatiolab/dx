@@ -91,7 +91,7 @@ public class Header implements Marshallable {
 		this.type = Util.readU8(buf);
 		this.code = Util.readU8(buf);
 		this.dataType = Util.readU8(buf);
-		int dummy = Util.readU8(buf);
+		Util.readU8(buf); /* reserved field */
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class Header implements Marshallable {
 		Util.writeU8((short)this.type, buf);
 		Util.writeU8((short)this.code, buf);
 		Util.writeU8((short)this.dataType, buf);
-		Util.writeU8(0, buf);
+		Util.writeU8((byte)0, buf);
 	}
 
 	@Override

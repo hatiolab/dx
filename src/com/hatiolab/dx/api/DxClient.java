@@ -2,8 +2,6 @@ package com.hatiolab.dx.api;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
 import com.hatiolab.dx.mplexer.EventMultiplexer;
@@ -25,10 +23,10 @@ public class DxClient {
 		this.mplexer = mplexer;
 
 		discoveryClient = new DiscoveryClient(eventListener, discoveryServicePort, 0);
-		
-		SelectableChannel channel = discoveryClient.getSelectableChannel();
-		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
-		key.attach(discoveryClient.getSelectableHandler());
+	}
+	
+	public void start() throws Exception {
+		mplexer.register(discoveryClient.getSelectableChannel(), SelectionKey.OP_READ, discoveryClient.getSelectableHandler());
 	}
 
 	public void close() throws Exception {
@@ -42,43 +40,13 @@ public class DxClient {
 	public void discovery() throws Exception {
 		discoveryClient.sendDiscoveryPacket();
 	}
-	
-	public void startPacketClient(InetAddress address, int port, PacketEventListener eventListener) {
+		
+	public void startPacketClient(InetAddress address, int port, PacketEventListener eventListener) throws IOException {
 		if(packetClient != null)
 			return;
 		
-		try {
-			packetClient = new PacketClient(eventListener, address.getHostAddress(), port);
+		packetClient = new PacketClient(eventListener, address.getHostAddress(), port);
 
-			SelectableChannel channel = packetClient.getSelectableChannel();
-			SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
-			key.attach(packetClient.getSelectableHandler());
-		} catch (IOException e) {
-			e.printStackTrace();
-			try {
-				packetClient.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			packetClient = null;
-		}
-	}
-	
-	public void regWritableSelector() {
-		SelectableChannel channel = packetClient.getSelectableChannel();
-		SelectionKey key;
-		try {
-			key = channel.register(mplexer.getSelector(), SelectionKey.OP_WRITE);
-			key.attach(packetClient.getSelectableHandler());
-		} catch (ClosedChannelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public void unregWritableSelector() {
-		if (key != null) {
-			key = null;
-		}
+		mplexer.register(packetClient.getSelectableChannel(), SelectionKey.OP_CONNECT, packetClient.getSelectableHandler());
 	}
 }

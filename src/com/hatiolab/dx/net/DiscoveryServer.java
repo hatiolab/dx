@@ -24,52 +24,39 @@ public class DiscoveryServer {
 	protected int discoveryServerPort;
 	protected int packetServerPort;
 	
-	protected byte[] headerBuf = new byte[128];
-	protected byte[] dataBuf = new byte[128];
-	protected byte[] respBuf = new byte[128];
 	protected ByteBuffer buffer = ByteBuffer.allocate(12);
+	protected Header header = new Header();
 
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
 		public void onSelected(SelectionKey key) {
 			try {
-				buffer.position(0);
+				buffer.clear();
 				InetSocketAddress addr = (InetSocketAddress)channel.receive(buffer);
 				buffer.flip();
 
 				/* Header unmarshalling */
-				Header header = new Header();
-				buffer.get(headerBuf, 0, header.getByteLength());
-				header.unmarshalling(headerBuf, 0);
-				
-				long dataLength = header.getLen() - header.getByteLength();
-				if(dataLength > 0) {
-					buffer.get(dataBuf, 0, (int)dataLength);
-				}
+				header.unmarshalling(buffer);
 
 				if(0 == header.getType() && Data.TYPE_PRIMITIVE == header.getDataType() && 0 == header.getCode()) {
-					// Must be discovery packet
+					// Should be discovery packet
 
 					/* Data unmarshalling */
 					Primitive data = new Primitive();
-					data.unmarshalling(dataBuf, 0);
+					data.unmarshalling(buffer);
 					int clientport = data.getS32();
 					
 					header.setType(Type.DX_PACKET_TYPE_DISCOVERY);
 					header.setCode((byte)Code.DX_DISCOVERY_RESPONSE);
 					data.setS32(packetServerPort);
 					
-					/* Response packet marshalling */
 					Packet resp = new Packet(header, data);
-					resp.marshalling(respBuf, 0);
-					
-					/* Send response */
-					ByteBuffer buffer = ByteBuffer.wrap(respBuf, 0, resp.getByteLength());
-					channel.send(buffer, new InetSocketAddress(addr.getHostName(), clientport));
+					PacketIO.sendPacketTo(channel, resp, new InetSocketAddress(addr.getHostName(), clientport));
 				}
 				
 			} catch (Exception e) {
 				e.printStackTrace();
+				key.cancel();
 			}
 		}
 	};

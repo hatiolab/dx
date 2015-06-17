@@ -1,7 +1,6 @@
 package com.hatiolab.dx.api;
 
 import java.io.IOException;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
 import com.hatiolab.dx.mplexer.EventMultiplexer;
@@ -26,26 +25,18 @@ public class DxServer {
 		
 		packetServer = new PacketServer(eventListener, packetServicePort);
 		discoveryServer = new DiscoveryServer(discoveryServicePort, packetServer.getServicePort());
-
-		SelectableChannel channel = discoveryServer.getSelectableChannel();
-		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
-		key.attach(discoveryServer.getSelectableHandler());
+	}
+	
+	public void start() {
+		if(packetServer != null)
+			mplexer.register(packetServer.getSelectableChannel(), SelectionKey.OP_ACCEPT, packetServer.getSelectableHandler());
 		
-		channel = packetServer.getSelectableChannel();
-		key = channel.register(mplexer.getSelector(), SelectionKey.OP_ACCEPT);
-		key.attach(packetServer.getSelectableHandler());
+		if(discoveryServer != null)
+			mplexer.register(discoveryServer.getSelectableChannel(), SelectionKey.OP_READ, discoveryServer.getSelectableHandler());
 	}
 
 	public void close() throws Exception {
 		packetServer.close();
 		discoveryServer.close();
-	}
-
-	public PacketServer getPacketServer() {
-		return packetServer;
-	}
-
-	public void setPacketServer(PacketServer packetServer) {
-		this.packetServer = packetServer;
 	}
 }

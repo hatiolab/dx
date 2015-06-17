@@ -1,7 +1,9 @@
 package com.hatiolab.dx.net;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -23,9 +25,11 @@ import com.hatiolab.dx.data.Stream;
 import com.hatiolab.dx.data.U16Array;
 import com.hatiolab.dx.data.U32Array;
 import com.hatiolab.dx.mplexer.EventMultiplexer;
+import com.hatiolab.dx.packet.Code;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
+import com.hatiolab.dx.packet.Type;
 
 public class PacketIO {
 	static final protected Header header = new Header();
@@ -36,26 +40,12 @@ public class PacketIO {
 	static int writePos = 0;
 	
 	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
-		int remaining = buffer.remaining();
-		int sz = channel.read(buffer);
-		
-		if(sz != remaining)
-			throw new IOException("Can't read all remainings (" + sz + " of " + remaining + ")");
-		
-		return sz;
+		int nread = channel.read(buffer);
+		if(0 > nread)
+			throw new IOException("Peer closed.");
+		return nread;
 	}
 	
-	
-//	public static int write(SocketChannel channel, ByteBuffer buffer) throws IOException {
-//		int remaining = buffer.remaining();
-//		int sz = channel.write(buffer);
-//		
-//		if(sz != remaining)
-//			throw new IOException("Can't write all remainings (" + sz + " of " + remaining + ")");
-//		
-//		return sz;
-//	}
-
 	public static Header parseHeader(SocketChannel channel) throws Exception {
 
 		headerBuffer.clear();
@@ -128,12 +118,6 @@ public class PacketIO {
 	}
 
 	public static void sendPacket(SocketChannel channel, Packet packet) throws IOException {
-		sendPacket(channel, packet.getHeader(), packet.getData());
-	}
-	
-	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
-		Packet packet = new Packet(header, data);
-		
 		Queue<ByteBuffer> queue = map.get(channel);
 		if (queue == null) {
 			queue = new ConcurrentLinkedQueue<ByteBuffer>();
@@ -149,11 +133,27 @@ public class PacketIO {
 		SelectionKey key = channel.keyFor(selector);
 		int i = key.interestOps();
 		key.interestOps(i | SelectionKey.OP_WRITE);
-		selector.wakeup();
+		EventMultiplexer.getInstance().wakeup();
+	}
+	
+	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
+		sendPacket(channel, new Packet(header, data));
+	}
+	
+	public static void sendPacketTo(DatagramChannel channel, Packet packet, SocketAddress to) throws IOException {
+		ByteBuffer buf = ByteBuffer.allocate(packet.getByteLength());
+		packet.marshalling(buf);
+		buf.flip();
+		
+		channel.send(buf, to);
+	}
+	
+	public static void sendPacketTo(DatagramChannel channel, Header header, Data data, SocketAddress to) throws IOException {
+		sendPacketTo(channel, new Packet(header, data), to);
 	}
 	
 	protected static int writeData(SelectionKey key) throws IOException {
-		EventMultiplexer.getInstance().assertPreemption();
+		EventMultiplexer.assertPreemption();
 		
 		SocketChannel channel = (SocketChannel)key.channel();
 		
