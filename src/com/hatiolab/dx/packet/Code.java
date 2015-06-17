@@ -35,6 +35,8 @@ public class Code {
     /* Commands */
 
     public final static int DX_CMD_BASE                         = 0x00;
+    public final static int DX_CMD_START_SENDING            = (DX_CMD_BASE + 1);
+    public final static int DX_CMD_STOP_SENDING             = (DX_CMD_BASE + 2);
 
     /* File */
 

@@ -2,7 +2,12 @@ package com.hatiolab.dx.net;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Queue;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.hatiolab.dx.data.ByteArray;
 import com.hatiolab.dx.data.ByteString;
@@ -17,6 +22,7 @@ import com.hatiolab.dx.data.S32Array;
 import com.hatiolab.dx.data.Stream;
 import com.hatiolab.dx.data.U16Array;
 import com.hatiolab.dx.data.U32Array;
+import com.hatiolab.dx.mplexer.EventMultiplexer;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
@@ -24,7 +30,10 @@ import com.hatiolab.dx.packet.Packet;
 public class PacketIO {
 	static final protected Header header = new Header();
 	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(8);
-	static final protected ByteBuffer dataBuffer = ByteBuffer.allocate(2 * 1024 * 1024);
+	
+	static WeakHashMap<SocketChannel, Queue<ByteBuffer>> map = new WeakHashMap<SocketChannel, Queue<ByteBuffer>>();
+
+	static int writePos = 0;
 	
 	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
 		int remaining = buffer.remaining();
@@ -36,40 +45,34 @@ public class PacketIO {
 		return sz;
 	}
 	
-	public static int write(SocketChannel channel, ByteBuffer buffer) throws IOException {
-		int remaining = buffer.remaining();
-		int sz = channel.write(buffer);
-		
-		if(sz != remaining)
-			throw new IOException("Can't write all remainings (" + sz + " of " + remaining + ")");
-		
-		return sz;
-	}
+	
+//	public static int write(SocketChannel channel, ByteBuffer buffer) throws IOException {
+//		int remaining = buffer.remaining();
+//		int sz = channel.write(buffer);
+//		
+//		if(sz != remaining)
+//			throw new IOException("Can't write all remainings (" + sz + " of " + remaining + ")");
+//		
+//		return sz;
+//	}
 
 	public static Header parseHeader(SocketChannel channel) throws Exception {
 
 		headerBuffer.clear();
-
 		read(channel, headerBuffer);
-		
-		header.unmarshalling(headerBuffer.array(), 0);
+		headerBuffer.flip();
+		header.unmarshalling(headerBuffer);
 		
 		return header;
 	}
 	
-	public static Data parseData(SocketChannel channel, Header header) throws Exception {
-
-		long dataLength = 0;
+	public static Header parseHeader(ByteBuffer buf) throws Exception {
+		header.unmarshalling(buf);
 		
-		dataLength = header.getLen() - header.getByteLength();
-		
-		if(dataLength > 0) {
-			dataBuffer.limit((int)dataLength);
-			dataBuffer.position(0);
-
-			read(channel, dataBuffer);
-		}
-
+		return header;
+	}
+	
+	public static Data parseData(ByteBuffer buf, Header header) throws Exception {
 		Data data = null;
 		
 		switch(header.getDataType()) {
@@ -119,7 +122,7 @@ public class PacketIO {
 			break;
 		}
 
-		data.unmarshalling(dataBuffer.array(), 0);
+		data.unmarshalling(buf);
 		
 		return data;
 	}
@@ -130,12 +133,53 @@ public class PacketIO {
 	
 	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
 		Packet packet = new Packet(header, data);
-		packet.marshalling(dataBuffer.array(), 0);
 		
-		dataBuffer.position(0);
-		dataBuffer.limit(packet.getByteLength());
+		Queue<ByteBuffer> queue = map.get(channel);
+		if (queue == null) {
+			queue = new ConcurrentLinkedQueue<ByteBuffer>();
+			map.put(channel, queue);
+		}
 		
-		/* Send response */
-		write(channel, dataBuffer);
+		ByteBuffer buf = ByteBuffer.allocate(packet.getByteLength());
+		packet.marshalling(buf);
+		buf.flip();
+		queue.add(buf);
+		
+		Selector selector = EventMultiplexer.getInstance().getSelector();
+		SelectionKey key = channel.keyFor(selector);
+		int i = key.interestOps();
+		key.interestOps(i | SelectionKey.OP_WRITE);
+		selector.wakeup();
+	}
+	
+	protected static int writeData(SelectionKey key) throws IOException {
+		EventMultiplexer.getInstance().assertPreemption();
+		
+		SocketChannel channel = (SocketChannel)key.channel();
+		
+		Queue<ByteBuffer> queue = map.get(channel);
+		if (queue == null) {
+			int i = key.interestOps();
+			key.interestOps(i & ~SelectionKey.OP_WRITE);
+			
+			return 0;
+		}
+		
+		while(true) {
+			ByteBuffer tmpBuffer = queue.peek();
+			if (tmpBuffer == null) {
+				int i = key.interestOps();
+				key.interestOps(i & ~SelectionKey.OP_WRITE);
+				
+				return 0;
+			}
+			
+			channel.write(tmpBuffer);
+			if (tmpBuffer.hasRemaining()) {
+				return 0;
+			}
+			
+			queue.poll();
+		}
 	}
 }

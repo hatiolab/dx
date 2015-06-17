@@ -2,6 +2,7 @@ package com.hatiolab.dx.api;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 
@@ -18,6 +19,8 @@ public class DxClient {
 	protected PacketClient packetClient;
 	protected DiscoveryClient discoveryClient;
 	
+	protected SelectionKey key;
+	
 	public DxClient(EventMultiplexer mplexer, int discoveryServicePort, DiscoveryListener eventListener) throws Exception {
 		this.mplexer = mplexer;
 
@@ -25,7 +28,7 @@ public class DxClient {
 		
 		SelectableChannel channel = discoveryClient.getSelectableChannel();
 		SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_READ);
-		key.attach(discoveryClient.getSelectableHandler());	
+		key.attach(discoveryClient.getSelectableHandler());
 	}
 
 	public void close() throws Exception {
@@ -50,7 +53,6 @@ public class DxClient {
 			SelectableChannel channel = packetClient.getSelectableChannel();
 			SelectionKey key = channel.register(mplexer.getSelector(), SelectionKey.OP_CONNECT);
 			key.attach(packetClient.getSelectableHandler());
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {
@@ -59,6 +61,24 @@ public class DxClient {
 				e1.printStackTrace();
 			}
 			packetClient = null;
+		}
+	}
+	
+	public void regWritableSelector() {
+		SelectableChannel channel = packetClient.getSelectableChannel();
+		SelectionKey key;
+		try {
+			key = channel.register(mplexer.getSelector(), SelectionKey.OP_WRITE);
+			key.attach(packetClient.getSelectableHandler());
+		} catch (ClosedChannelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void unregWritableSelector() {
+		if (key != null) {
+			key = null;
 		}
 	}
 }

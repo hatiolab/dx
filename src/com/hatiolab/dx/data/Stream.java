@@ -1,6 +1,7 @@
 package com.hatiolab.dx.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
@@ -49,11 +50,14 @@ public class Stream extends Data {
 	@Override
 	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		
-		if(offset + getByteLength() > buf.length)
+		if(offset + 8 > buf.length)
 			throw new IOException("OutOfBound");
-		
+
 		this.len = (int)Util.readU32(buf, offset);
 		this.type = (int)Util.readU16(buf, offset + 4);
+
+		if(offset + getByteLength() > buf.length)
+			throw new IOException("OutOfBound");
 		
 		int pos = offset + 8;
 		
@@ -70,6 +74,7 @@ public class Stream extends Data {
 
 		Util.writeU32(this.len, buf, offset);
 		Util.writeU16(this.type, buf, offset + 4);
+		Util.writeU16(0, buf, offset + 6);
 		
 		int pos = offset + 8;
 		
@@ -78,6 +83,35 @@ public class Stream extends Data {
 		return getByteLength();
 	}
 
+	@Override
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+
+		if(8 > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		this.len = (int)Util.readU32(buf);
+		this.type = (int)Util.readU16(buf);
+		int dummy = (int)Util.readU16(buf);
+
+		if(this.len > buf.remaining())
+			throw new IOException("OutOfBound");
+		
+		buf.put(Stream.content, 0, this.len);
+	}
+	
+	@Override
+	public void marshalling(ByteBuffer buf) throws IOException {
+
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		Util.writeU32(this.len, buf);
+		Util.writeU16(this.type, buf);
+		Util.writeU16(0, buf);
+		
+		buf.put(Stream.content, 0, this.len);
+	}
+	
 	@Override
 	public int getByteLength() {
 		return 8 + len;

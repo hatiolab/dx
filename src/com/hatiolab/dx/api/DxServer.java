@@ -19,6 +19,8 @@ public class DxServer {
 	PacketServer packetServer;
 	DiscoveryServer discoveryServer;
 	
+	SelectionKey key;
+	
 	public DxServer(EventMultiplexer mplexer, int packetServicePort, int discoveryServicePort, PacketEventListener eventListener) throws IOException {
 		this.mplexer = mplexer;
 		
@@ -38,5 +40,12 @@ public class DxServer {
 		packetServer.close();
 		discoveryServer.close();
 	}
-	
+
+	public PacketServer getPacketServer() {
+		return packetServer;
+	}
+
+	public void setPacketServer(PacketServer packetServer) {
+		this.packetServer = packetServer;
+	}
 }

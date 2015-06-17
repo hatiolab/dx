@@ -3,6 +3,7 @@ package com.hatiolab.dx.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class Util {
@@ -34,6 +35,16 @@ public class Util {
 				| ((0x00FFL & buf[offset + 0]) << 24);
 	}
 
+	public static final long readU32(ByteBuffer bbuf) {
+		byte[] buf = new byte[4];
+		bbuf.get(buf);
+		
+		return (0x00FFL & buf[3])
+				| ((0x00FFL & buf[2]) << 8)
+				| ((0x00FFL & buf[1]) << 16)
+				| ((0x00FFL & buf[0]) << 24);
+	}
+
 	public static final int readS32(byte[] buf, int offset) {
 		return (0x00FF & buf[offset + 3])
 				| ((0x00FF & buf[offset + 2]) << 8)
@@ -46,6 +57,14 @@ public class Util {
 				| ((0x00FF & buf[offset + 0]) << 8);
 	}
 	
+	public static final long readU16(ByteBuffer bbuf) {
+		byte[] buf = new byte[2];
+		bbuf.get(buf);
+		
+		return (0x00FFL & buf[1])
+				| ((0x00FFL & buf[0]) << 8);
+	}
+	
 	public static final short readS16(byte[] buf, int offset) {
 		return (short)((0x00FF & buf[offset + 1])
 				| ((0x00FF & buf[offset + 0]) << 8));
@@ -53,6 +72,10 @@ public class Util {
 
 	public static final short readU8(byte[] buf, int offset) {
 		return (short)(0x00FF & buf[offset + 0]);
+	}
+	
+	public static final short readU8(ByteBuffer buf) {
+		return (short)(0x00FF & buf.get());
 	}
 	
 	public static final byte readS8(byte[] buf, int offset) {
@@ -66,11 +89,23 @@ public class Util {
 		buf[offset + 0] = (byte)(0x00FFL & (value >> 24));
 	}
 	
+	public static final void writeU32(long value, ByteBuffer buf) {
+		buf.put((byte)(0x00FFL & (value >> 24)));
+		buf.put((byte)(0x00FFL & (value >> 16)));
+		buf.put((byte)(0x00FFL & (value >> 8)));
+		buf.put((byte)(0x00FFL & value));
+	}
+	
 	public static final void writeS32(int value, byte[] buf, int offset) {
 		buf[offset + 3] = (byte)(0x00FF & value);
 		buf[offset + 2] = (byte)(0x00FF & (value >> 8));
 		buf[offset + 1] = (byte)(0x00FF & (value >> 16));
 		buf[offset + 0] = (byte)(0x00FF & (value >> 24));
+	}
+	
+	public static final void writeU16(long value, ByteBuffer buf) {
+		buf.put((byte)(0x00FFL & (value >> 8)));
+		buf.put((byte)(0x00FFL & value));
 	}
 	
 	public static final void writeU16(int value, byte[] buf, int offset) {
@@ -86,6 +121,10 @@ public class Util {
 	public static final void writeU8(short value, byte[] buf, int offset) {
 		buf[offset] = (byte)(0x00FF & value);
 	}
+	
+	public static final void writeU8(long value, ByteBuffer buf) {
+		buf.put((byte)(0x00FF & value));
+	}	
 	
 	public static final void writeS8(byte value, byte[] buf, int offset) {
 		buf[offset] = value;

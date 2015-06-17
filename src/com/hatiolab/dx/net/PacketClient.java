@@ -2,17 +2,20 @@ package com.hatiolab.dx.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+
+import android.util.Log;
 
 import com.hatiolab.dx.mplexer.SelectableHandler;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 
 public class PacketClient {
-	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000; 
-	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000;
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 * 3; 
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 * 3;
 	
 	protected PacketEventListener eventListener = null;
 	protected int port;
@@ -20,6 +23,8 @@ public class PacketClient {
 	protected SocketChannel clientSocketChannel;
 	protected boolean connected = false;
 
+	ByteBuffer packetBuf = ByteBuffer.allocate(1024 * 1024);
+	ByteBuffer packetLength = ByteBuffer.allocate(4);
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
 		public void onSelected(SelectionKey key) {
@@ -37,17 +42,39 @@ public class PacketClient {
 							key.interestOps(SelectionKey.OP_READ);
 						}
 					}
-
 				}
+				
 				if(key.isReadable()) {
-
 					SocketChannel channel = (SocketChannel)key.channel();
 
-					Header header = PacketIO.parseHeader(channel);
-					Data data = PacketIO.parseData(channel, header);
-
-					eventListener.onEvent(channel, header, data);					
-		
+					if (packetBuf.position() == 0) {
+						int i = channel.read(packetLength);
+						Log.d("Length1: ", "" + i);
+						packetLength.flip();
+						long length = Util.readU32(packetLength);
+						packetLength.flip();
+						packetBuf.limit((int)length);
+						packetBuf.put(packetLength);
+						
+						packetLength.clear();
+					}
+					
+					int j = channel.read(packetBuf);
+					Log.d("Length2: ", "" + j);
+					
+					if (packetBuf.hasRemaining()) {
+						return;
+					}
+					packetBuf.flip();
+					
+					Header header = PacketIO.parseHeader(packetBuf);
+					Data data = PacketIO.parseData(packetBuf, header);
+					eventListener.onEvent(channel, header, data);
+					packetBuf.clear();
+				}
+				
+				if (key.isWritable()) {
+					PacketIO.writeData(key);
 				}
 			} catch(Exception e) {
 				e.printStackTrace();

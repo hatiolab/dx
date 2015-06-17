@@ -83,13 +83,27 @@ public class Header implements Marshallable {
 	}
 
 	@Override
-	public int unmarshalling(ByteBuffer buf, int offset) throws IOException {
-		return 0;
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+		
+		this.len = Util.readU32(buf);
+		this.type = Util.readU8(buf);
+		this.code = Util.readU8(buf);
+		this.dataType = Util.readU8(buf);
+		int dummy = Util.readU8(buf);
 	}
 
 	@Override
-	public int marshalling(ByteBuffer buf, int offset) throws IOException {
-		return 0;
+	public void marshalling(ByteBuffer buf) throws IOException {
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		Util.writeU32(this.len, buf);
+		Util.writeU8((short)this.type, buf);
+		Util.writeU8((short)this.code, buf);
+		Util.writeU8((short)this.dataType, buf);
+		Util.writeU8(0, buf);
 	}
 
 	@Override

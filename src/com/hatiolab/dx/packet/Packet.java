@@ -55,13 +55,19 @@ public class Packet implements Marshallable {
 	}
 
 	@Override
-	public int unmarshalling(ByteBuffer buf, int offset) throws IOException {
-		return 0;
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+		header.unmarshalling(buf);
+		if(data != null)
+			data.unmarshalling(buf);
 	}
 
 	@Override
-	public int marshalling(ByteBuffer buf, int offset) throws IOException {
-		return 0;
+	public void marshalling(ByteBuffer buf) throws IOException {
+		header.setLen(getByteLength());
+		
+		header.marshalling(buf);
+		if(data != null)
+			data.marshalling(buf);
 	}
 
 	public int getByteLength() {

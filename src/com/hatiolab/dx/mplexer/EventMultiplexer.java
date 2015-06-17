@@ -64,4 +64,9 @@ public class EventMultiplexer {
 		return selector;
 	}
 
+	public void wakeup() {
+		if (selector != null) {			
+			selector.wakeup();
+		}
+	}
 }
