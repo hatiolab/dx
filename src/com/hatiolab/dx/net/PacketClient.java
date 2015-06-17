@@ -7,8 +7,6 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import android.util.Log;
-
 import com.hatiolab.dx.mplexer.SelectableHandler;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
@@ -66,8 +64,6 @@ public class PacketClient {
 						return;
 					}
 					
-//					Log.d(TAG, "Read a full packet data.");
-					
 					packetBuf.flip();
 					
 					Header header = PacketIO.parseHeader(packetBuf);
@@ -77,7 +73,7 @@ public class PacketClient {
 				}
 				
 				if (key.isWritable()) {
-					PacketIO.writeData(key);
+					PacketIO.sendQueuedPackets(key);
 				}
 			} catch(Exception e) {
 				e.printStackTrace();

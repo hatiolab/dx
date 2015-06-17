@@ -7,6 +7,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,17 +26,24 @@ import com.hatiolab.dx.data.Stream;
 import com.hatiolab.dx.data.U16Array;
 import com.hatiolab.dx.data.U32Array;
 import com.hatiolab.dx.mplexer.EventMultiplexer;
-import com.hatiolab.dx.packet.Code;
 import com.hatiolab.dx.packet.Data;
 import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
-import com.hatiolab.dx.packet.Type;
 
 public class PacketIO {
 	static final protected Header header = new Header();
 	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(8);
+
+	static private class QueuedBuffer {
+		ByteBuffer buffer;
+		boolean discardable;
+		QueuedBuffer(ByteBuffer buffer, boolean discardable) {
+			this.buffer = buffer;
+			this.discardable = discardable;
+		}
+	}
 	
-	static WeakHashMap<SocketChannel, Queue<ByteBuffer>> map = new WeakHashMap<SocketChannel, Queue<ByteBuffer>>();
+	static WeakHashMap<SocketChannel, Queue<QueuedBuffer>> packetQueue = new WeakHashMap<SocketChannel, Queue<QueuedBuffer>>();
 
 	static int writePos = 0;
 	
@@ -117,17 +125,28 @@ public class PacketIO {
 		return data;
 	}
 
-	public static void sendPacket(SocketChannel channel, Packet packet) throws IOException {
-		Queue<ByteBuffer> queue = map.get(channel);
+	public static void sendPacket(SocketChannel channel, Packet packet, boolean discardable) throws IOException {
+		
+		Queue<QueuedBuffer> queue = packetQueue.get(channel);			
 		if (queue == null) {
-			queue = new ConcurrentLinkedQueue<ByteBuffer>();
-			map.put(channel, queue);
+			queue = new ConcurrentLinkedQueue<QueuedBuffer>();
+			packetQueue.put(channel, queue);
+		}
+		
+		if(discardable) {
+			Iterator<QueuedBuffer> it = queue.iterator();
+			while(it.hasNext()) {
+				QueuedBuffer qb = it.next();
+				if(qb.discardable) {
+					queue.remove(qb);
+				}
+			}
 		}
 		
 		ByteBuffer buf = ByteBuffer.allocate(packet.getByteLength());
 		packet.marshalling(buf);
 		buf.flip();
-		queue.add(buf);
+		queue.add(new QueuedBuffer(buf, discardable));
 		
 		Selector selector = EventMultiplexer.getInstance().getSelector();
 		SelectionKey key = channel.keyFor(selector);
@@ -136,8 +155,16 @@ public class PacketIO {
 		EventMultiplexer.getInstance().wakeup();
 	}
 	
+	public static void sendPacket(SocketChannel channel, Packet packet) throws IOException {
+		sendPacket(channel, packet, false);
+	}
+	
 	public static void sendPacket(SocketChannel channel, Header header, Data data) throws IOException {
-		sendPacket(channel, new Packet(header, data));
+		sendPacket(channel, new Packet(header, data), false);
+	}
+	
+	public static void sendPacket(SocketChannel channel, Header header, Data data, boolean discardable) throws IOException {
+		sendPacket(channel, new Packet(header, data), discardable);
 	}
 	
 	public static void sendPacketTo(DatagramChannel channel, Packet packet, SocketAddress to) throws IOException {
@@ -152,12 +179,12 @@ public class PacketIO {
 		sendPacketTo(channel, new Packet(header, data), to);
 	}
 	
-	protected static int writeData(SelectionKey key) throws IOException {
+	protected static int sendQueuedPackets(SelectionKey key) throws IOException {
 		EventMultiplexer.assertPreemption();
 		
 		SocketChannel channel = (SocketChannel)key.channel();
 		
-		Queue<ByteBuffer> queue = map.get(channel);
+		Queue<QueuedBuffer> queue = packetQueue.get(channel);
 		if (queue == null) {
 			int i = key.interestOps();
 			key.interestOps(i & ~SelectionKey.OP_WRITE);
@@ -166,13 +193,16 @@ public class PacketIO {
 		}
 		
 		while(true) {
-			ByteBuffer tmpBuffer = queue.peek();
-			if (tmpBuffer == null) {
+			QueuedBuffer qb = queue.peek();
+			
+			if(qb == null) {
 				int i = key.interestOps();
 				key.interestOps(i & ~SelectionKey.OP_WRITE);
 				
 				return 0;
 			}
+
+			ByteBuffer tmpBuffer = qb.buffer;
 			
 			channel.write(tmpBuffer);
 			if (tmpBuffer.hasRemaining()) {
