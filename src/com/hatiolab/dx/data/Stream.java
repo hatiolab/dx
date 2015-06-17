@@ -9,7 +9,7 @@ import com.hatiolab.dx.packet.Data;
 public class Stream extends Data {
 	int len;
 	int type;
-	static byte[] content = new byte[3 * 1024 * 1024];
+	byte[] content;
 
 	public Stream() {
 	}
@@ -17,8 +17,7 @@ public class Stream extends Data {
 	public Stream(int type, byte[] content) {
 		this.type = type;
 		this.len = content.length;
-
-		System.arraycopy(content, 0, Stream.content, 0, content.length);
+		this.content = content;
 	}
 
 	public int getLen() {
@@ -43,8 +42,8 @@ public class Stream extends Data {
 
 	public void setContent(byte[] content) {
 		this.len = content.length;
-		
-		System.arraycopy(content, 0, Stream.content, 0, content.length);
+
+		this.content = content;
 	}
 
 	@Override
@@ -61,7 +60,9 @@ public class Stream extends Data {
 		
 		int pos = offset + 8;
 		
-		System.arraycopy(buf, pos, Stream.content, 0, this.len);
+		this.content = new byte[this.len];
+		
+		System.arraycopy(buf, pos, this.content, 0, this.len);
 
 		return getByteLength();
 	}
@@ -78,7 +79,7 @@ public class Stream extends Data {
 		
 		int pos = offset + 8;
 		
-		System.arraycopy(Stream.content, 0, buf, pos, this.len);
+		System.arraycopy(this.content, 0, buf, pos, this.len);
 
 		return getByteLength();
 	}
@@ -91,12 +92,14 @@ public class Stream extends Data {
 
 		this.len = (int)Util.readU32(buf);
 		this.type = (int)Util.readU16(buf);
-		int dummy = (int)Util.readU16(buf);
+		Util.readU16(buf); /* reserved field */
 
 		if(this.len > buf.remaining())
 			throw new IOException("OutOfBound");
 		
-		buf.put(Stream.content, 0, this.len);
+		this.content = new byte[this.len];
+		
+		buf.get(this.content);
 	}
 	
 	@Override
@@ -107,9 +110,9 @@ public class Stream extends Data {
 
 		Util.writeU32(this.len, buf);
 		Util.writeU16(this.type, buf);
-		Util.writeU16(0, buf);
+		Util.writeU16(0, buf); /* reserved field */
 		
-		buf.put(Stream.content, 0, this.len);
+		buf.put(this.content);
 	}
 	
 	@Override
