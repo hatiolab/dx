@@ -133,16 +133,6 @@ public class PacketIO {
 			packetQueue.put(channel, queue);
 		}
 		
-		if(discardable) {
-			Iterator<QueuedBuffer> it = queue.iterator();
-			while(it.hasNext()) {
-				QueuedBuffer qb = it.next();
-				if(qb.discardable) {
-					queue.remove(qb);
-				}
-			}
-		}
-		
 		ByteBuffer buf = ByteBuffer.allocate(packet.getByteLength());
 		packet.marshalling(buf);
 		buf.flip();
@@ -201,9 +191,14 @@ public class PacketIO {
 				
 				return 0;
 			}
-
+			
 			ByteBuffer tmpBuffer = qb.buffer;
 			
+			if(qb.discardable && queue.size() > 3 && tmpBuffer.position() == 0) {
+				queue.poll();
+				continue;
+			}
+
 			channel.write(tmpBuffer);
 			if (tmpBuffer.hasRemaining()) {
 				return 0;
