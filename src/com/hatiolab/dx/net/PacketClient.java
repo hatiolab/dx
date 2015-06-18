@@ -2,14 +2,12 @@ package com.hatiolab.dx.net;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import com.hatiolab.dx.mplexer.SelectableHandler;
-import com.hatiolab.dx.packet.Data;
-import com.hatiolab.dx.packet.Header;
+import com.hatiolab.dx.packet.Packet;
 
 public class PacketClient {
 	public static final String TAG = "PacketClient";
@@ -23,8 +21,6 @@ public class PacketClient {
 	protected SocketChannel clientSocketChannel;
 	protected boolean connected = false;
 
-	ByteBuffer packetBuf = ByteBuffer.allocate(1024 * 1024);
-	ByteBuffer packetLength = ByteBuffer.allocate(4);
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
 		public void onSelected(SelectionKey key) {
@@ -47,29 +43,10 @@ public class PacketClient {
 				if(key.isReadable()) {
 					SocketChannel channel = (SocketChannel)key.channel();
 
-					if (packetBuf.position() == 0) {
-						PacketIO.read(channel, packetLength);
-						packetLength.flip();
-						long length = Util.readU32(packetLength);
-						packetLength.flip();
-						packetBuf.limit((int)length);
-						packetBuf.put(packetLength);
-						
-						packetLength.clear();
-					}
-					
-					PacketIO.read(channel, packetBuf);
+					Packet packet = PacketIO.receivePacket(channel);
 
-					if (packetBuf.hasRemaining()) {
-						return;
-					}
-					
-					packetBuf.flip();
-					
-					Header header = PacketIO.parseHeader(packetBuf);
-					Data data = PacketIO.parseData(packetBuf, header);
-					eventListener.onEvent(channel, header, data);
-					packetBuf.clear();
+					if(packet != null)
+						eventListener.onEvent(channel, packet.getHeader(), packet.getData());
 				}
 				
 				if (key.isWritable()) {

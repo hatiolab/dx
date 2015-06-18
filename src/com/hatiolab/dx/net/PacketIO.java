@@ -1,6 +1,7 @@
 package com.hatiolab.dx.net;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -32,9 +33,8 @@ import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
 
 public class PacketIO {
-	static final protected Header header = new Header();
-	static final protected ByteBuffer headerBuffer = ByteBuffer.allocate(8);
-
+	private static final int MAX_PACKET_SIZE = 1024 * 1024;
+	
 	static private class QueuedBuffer {
 		ByteBuffer buffer;
 		boolean discardable;
@@ -44,34 +44,19 @@ public class PacketIO {
 		}
 	}
 	
-	static WeakHashMap<SocketChannel, Queue<QueuedBuffer>> packetQueue = new WeakHashMap<SocketChannel, Queue<QueuedBuffer>>();
+	private static WeakHashMap<SocketChannel, Queue<QueuedBuffer>> sendBufferQMap = new WeakHashMap<SocketChannel, Queue<QueuedBuffer>>();
+	private static WeakHashMap<SocketChannel, ByteBuffer> readBufferMap = new WeakHashMap<SocketChannel, ByteBuffer>();
 
-	static int writePos = 0;
-	
-	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
-		int nread = channel.read(buffer);
-		if(0 > nread)
-			throw new IOException("Peer closed.");
-		return nread;
-	}
-	
-	public static Header parseHeader(SocketChannel channel) throws Exception {
+	private static final Header header = new Header();
+	private static final ByteBuffer lengthBuf = ByteBuffer.allocate(4);
 
-		headerBuffer.clear();
-		read(channel, headerBuffer);
-		headerBuffer.flip();
-		header.unmarshalling(headerBuffer);
-		
-		return header;
-	}
-	
-	public static Header parseHeader(ByteBuffer buf) throws Exception {
+	protected static Header parseHeader(ByteBuffer buf) throws Exception {
 		header.unmarshalling(buf);
 		
 		return header;
 	}
 	
-	public static Data parseData(ByteBuffer buf, Header header) throws Exception {
+	protected static Data parseData(ByteBuffer buf, Header header) throws Exception {
 		Data data = null;
 		
 		switch(header.getDataType()) {
@@ -126,12 +111,71 @@ public class PacketIO {
 		return data;
 	}
 
+	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
+		int nread = channel.read(buffer);
+		if(0 > nread)
+			throw new IOException("Peer closed.");
+		return nread;
+	}
+
+	public static Packet receivePacket(SocketChannel channel) throws Exception {
+
+		ByteBuffer packetBuf = readBufferMap.get(channel);
+		if(packetBuf == null) {
+			packetBuf = ByteBuffer.allocate(MAX_PACKET_SIZE);
+			readBufferMap.put(channel, packetBuf);
+		}
+		
+		if (packetBuf.position() == 0) {
+			PacketIO.read(channel, lengthBuf);
+			lengthBuf.flip();
+			long length = Util.readU32(lengthBuf);
+			lengthBuf.flip();
+			packetBuf.limit((int)length);
+			packetBuf.put(lengthBuf);
+			
+			lengthBuf.clear();
+		}
+		
+		PacketIO.read(channel, packetBuf);
+
+		if (packetBuf.hasRemaining()) {
+			return null;
+		}
+							
+		packetBuf.flip();
+		
+		Header header = parseHeader(packetBuf);
+		Data data = parseData(packetBuf, header);
+		
+		packetBuf.clear();
+
+		return new Packet(header, data);
+	}
+	
+	private static ByteBuffer buffer = ByteBuffer.allocate(12);
+
+	protected interface PacketReceivedListener {
+		void onReceive(DatagramChannel channel, Header header, Data data, InetSocketAddress addr) throws Exception;
+	}
+	
+	public static void receivePacket(DatagramChannel channel, PacketReceivedListener listener) throws Exception {
+		buffer.clear();
+		InetSocketAddress addr = (InetSocketAddress)channel.receive(buffer);
+		buffer.flip();
+		
+		Header header = parseHeader(buffer);
+		Data data = parseData(buffer, header);
+		
+		listener.onReceive(channel, header, data, addr);
+	}
+
 	public static void sendPacket(SocketChannel channel, Packet packet, boolean discardable) throws IOException {
 		
-		Queue<QueuedBuffer> queue = packetQueue.get(channel);			
+		Queue<QueuedBuffer> queue = sendBufferQMap.get(channel);			
 		if (queue == null) {
 			queue = new ConcurrentLinkedQueue<QueuedBuffer>();
-			packetQueue.put(channel, queue);
+			sendBufferQMap.put(channel, queue);
 		}
 		
 		ByteBuffer buf = ByteBuffer.allocate(packet.getByteLength());
@@ -175,7 +219,7 @@ public class PacketIO {
 		
 		SocketChannel channel = (SocketChannel)key.channel();
 		
-		Queue<QueuedBuffer> queue = packetQueue.get(channel);
+		Queue<QueuedBuffer> queue = sendBufferQMap.get(channel);
 		if (queue == null) {
 			int i = key.interestOps();
 			key.interestOps(i & ~SelectionKey.OP_WRITE);

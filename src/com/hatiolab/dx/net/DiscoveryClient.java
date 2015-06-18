@@ -1,9 +1,7 @@
 package com.hatiolab.dx.net;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -18,38 +16,31 @@ import com.hatiolab.dx.packet.Type;
 
 public class DiscoveryClient {
 
-	protected DatagramSocket socket;
 	protected DatagramChannel channel;
 	
 	protected int discoveryServerPort;
 	
 	protected DiscoveryListener discoveryListener;
 	
-	protected ByteBuffer buffer = ByteBuffer.allocate(12);
-	protected Header header = new Header();
-
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
-		@Override
-		public void onSelected(SelectionKey key) {
-			try {
-				buffer.clear();
-				InetSocketAddress addr = (InetSocketAddress)channel.receive(buffer);
-				buffer.flip();
-				
-				/* Header unmarshalling */
-				header.unmarshalling(buffer);
-				
+		PacketIO.PacketReceivedListener listener = new PacketIO.PacketReceivedListener() {
+
+			@Override
+			public void onReceive(DatagramChannel channel, Header header, Data data, InetSocketAddress addr) throws Exception {
 				if(Data.TYPE_PRIMITIVE == header.getDataType() && 1 == header.getCode()) {
 					// Should be discovery response packet
 
-					/* Data unmarshalling */
-					Primitive data = new Primitive();
-					data.unmarshalling(buffer);
-					int serverport = data.getS32();
+					int serverport = ((Primitive)data).getS32();
 					
 					DiscoveryClient.this.discoveryListener.onFoundServer(addr.getAddress(), serverport);
 				}
-				
+			}
+		};
+		
+		@Override
+		public void onSelected(SelectionKey key) {
+			try {
+				PacketIO.receivePacket(channel, listener);
 			} catch (Exception e) {
 				e.printStackTrace();
 				key.cancel();

@@ -1,7 +1,5 @@
 package com.hatiolab.dx.api;
 
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
