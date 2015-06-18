@@ -2,6 +2,11 @@ package com.hatiolab.dx.exception;
 
 public class BugError extends Error {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6930670134179374924L;
+	
 	protected static final String message = "(이 메시지는 버그가 있을 경우에 나타납니다.)";
 	
 	public BugError() {
