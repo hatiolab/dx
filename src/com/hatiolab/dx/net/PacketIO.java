@@ -11,6 +11,8 @@ import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.util.Log;
+
 import com.hatiolab.dx.data.ByteArray;
 import com.hatiolab.dx.data.ByteString;
 import com.hatiolab.dx.data.F32Array;
@@ -195,6 +197,7 @@ public class PacketIO {
 			
 			if(qb.discardable && queue.size() > 3 && tmpBuffer.position() == 0) {
 				queue.poll();
+				Log.d("discard", "discard");
 				continue;
 			}
 
