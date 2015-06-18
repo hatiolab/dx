@@ -50,13 +50,13 @@ public class PacketIO {
 	private static final Header header = new Header();
 	private static final ByteBuffer lengthBuf = ByteBuffer.allocate(4);
 
-	protected static Header parseHeader(ByteBuffer buf) throws Exception {
+	private static Header parseHeader(ByteBuffer buf) throws Exception {
 		header.unmarshalling(buf);
 		
 		return header;
 	}
 	
-	protected static Data parseData(ByteBuffer buf, Header header) throws Exception {
+	private static Data parseData(ByteBuffer buf, Header header) throws Exception {
 		Data data = null;
 		
 		switch(header.getDataType()) {
@@ -111,7 +111,7 @@ public class PacketIO {
 		return data;
 	}
 
-	public static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
+	private static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
 		int nread = channel.read(buffer);
 		if(0 > nread)
 			throw new IOException("Peer closed.");
