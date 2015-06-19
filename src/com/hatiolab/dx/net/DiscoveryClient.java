@@ -60,7 +60,7 @@ public class DiscoveryClient {
 		data.setS32(channel.socket().getLocalPort());
 		
 		Packet resp = new Packet(header, data);
-		PacketIO.sendPacketTo(channel, resp, new InetSocketAddress("255.255.255.255", this.discoveryServerPort));
+		PacketIO.sendPacketTo(channel, resp, new InetSocketAddress(PacketIO.getBroadcastAddr(), this.discoveryServerPort));
 	}
 
 	public DiscoveryClient(DiscoveryListener discoveryListener) throws IOException {

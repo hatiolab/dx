@@ -1,8 +1,10 @@
 package com.hatiolab.dx.net;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
@@ -34,6 +36,7 @@ import com.hatiolab.dx.packet.Packet;
 
 public class PacketIO {
 	private static final int MAX_PACKET_SIZE = 1024 * 1024;
+	private static final byte[] DEFAULT_BROADCAST_ADDR = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF };
 	
 	static private class QueuedBuffer {
 		ByteBuffer buffer;
@@ -49,6 +52,24 @@ public class PacketIO {
 
 	private static final Header header = new Header();
 	private static final ByteBuffer lengthBuf = ByteBuffer.allocate(4);
+	
+	private static InetAddress broadcastAddr;
+	
+	public static InetAddress getBroadcastAddr() {
+		if(broadcastAddr == null) {
+			try {
+				broadcastAddr = InetAddress.getByAddress(DEFAULT_BROADCAST_ADDR);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return broadcastAddr;
+	}
+	
+	public static void setBroadcastAddr(InetAddress broadcastAddr) {
+		PacketIO.broadcastAddr = broadcastAddr;
+	}
 
 	private static Header parseHeader(ByteBuffer buf) throws Exception {
 		header.unmarshalling(buf);
