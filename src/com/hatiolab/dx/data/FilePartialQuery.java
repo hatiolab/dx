@@ -1,6 +1,7 @@
 package com.hatiolab.dx.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
@@ -67,6 +68,28 @@ public class FilePartialQuery extends Data {
 		Util.writeString(this.path, buf, offset + 8, Data.PATH_MAX_SIZE);
 		
 		return getByteLength();
+	}
+	
+	@Override
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+		
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+		
+		this.begin = (int)Util.readU32(buf);
+		this.end = (int)Util.readU32(buf);
+		this.path = Util.readString(buf, Data.PATH_MAX_SIZE);
+	}
+
+	@Override
+	public void marshalling(ByteBuffer buf) throws IOException {
+
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		Util.writeU32(this.begin, buf);
+		Util.writeU32(this.end, buf);
+		Util.writeString(this.path, buf, Data.PATH_MAX_SIZE);
 	}
 
 	@Override

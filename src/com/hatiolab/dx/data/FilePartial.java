@@ -1,6 +1,7 @@
 package com.hatiolab.dx.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import com.hatiolab.dx.net.Util;
 import com.hatiolab.dx.packet.Data;
@@ -108,6 +109,36 @@ public class FilePartial extends Data {
 		System.arraycopy(this.content, 0, buf, pos, this.partialLen);
 
 		return getByteLength();
+	}
+	
+	@Override
+	public void unmarshalling(ByteBuffer buf) throws IOException {
+		
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+		
+		this.totalLen = (int)Util.readU32(buf);
+		this.partialLen = (int)Util.readU32(buf);
+		this.begin = (int)Util.readU32(buf);
+		this.end = (int)Util.readU32(buf);
+		this.path = Util.readString(buf, Data.PATH_MAX_SIZE);
+		
+		buf.get(this.content);
+	}
+
+	@Override
+	public void marshalling(ByteBuffer buf) throws IOException {
+
+		if(getByteLength() > buf.remaining())
+			throw new IOException("OutOfBound");
+
+		Util.writeU32(this.totalLen, buf);
+		Util.writeU32(this.partialLen, buf);
+		Util.writeU32(this.begin, buf);
+		Util.writeU32(this.end, buf);
+		Util.writeString(this.path, buf, Data.PATH_MAX_SIZE);
+		
+		buf.put(this.content);
 	}
 
 	@Override
