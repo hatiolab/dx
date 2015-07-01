@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import com.hatiolab.dx.net.Marshallable;
 
 public class Data implements Marshallable {
+	public static final int TRACK_ID_SIZE = 4;
+	public static final int TRACK_TYPE_SIZE = 4;
 	public static final int PATH_MAX_SIZE = 128;
 	public static final int FILE_PARTIAL_MAX_SIZE = 500000;
 
@@ -29,6 +31,12 @@ public class Data implements Marshallable {
 
 	public static final int TYPE_STREAM		=		41;		/* Streaming Data */
 
+	public static final int TYPE_MOVIE_GET_INFO 	= 51;		/* Playback - Movie Get Info */
+	public static final int TYPE_MOVIE_INFO 		= 52;		/* Playback - Movie Info */
+	public static final int TYPE_MOVIE_COMMAND_I 	= 53;		/* Playback - Command : Start, Resume */
+	public static final int TYPE_MOVIE_COMMAND_II 	= 54;		/* Playback - Command : Stop, Pause */
+	public static final int TYPE_MOVIE_FRAME	 	= 55;		/* Playback - Frame for Stream */
+	
 	@Override
 	public int unmarshalling(byte[] buf, int offset) throws IOException {
 		return 0;

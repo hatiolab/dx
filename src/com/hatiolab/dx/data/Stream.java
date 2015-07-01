@@ -10,7 +10,7 @@ public class Stream extends Data {
 	int len;
 	int type;
 	byte[] content;
-
+	
 	public Stream() {
 	}
 	

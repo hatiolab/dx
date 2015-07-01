@@ -24,12 +24,12 @@ public class U32Array extends Data {
 		this.buf = buf;
 	}
 	
-	public void setU16s(long[] data) {
+	public void setU32s(long[] data) {
 		this.len = data.length;
 		this.buf = data;
 	}
 	
-	public long[] getU16s() {
+	public long[] getU32s() {
 		return buf;
 	}
 	

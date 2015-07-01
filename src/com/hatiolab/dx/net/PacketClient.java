@@ -42,7 +42,6 @@ public class PacketClient {
 				
 				if(key.isReadable()) {
 					SocketChannel channel = (SocketChannel)key.channel();
-
 					Packet packet = PacketIO.receivePacket(channel);
 
 					if(packet != null)
@@ -55,7 +54,8 @@ public class PacketClient {
 			} catch(Exception e) {
 				e.printStackTrace();
 				try {
-					close();
+//					close();
+					close(true);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -82,6 +82,16 @@ public class PacketClient {
 		clientSocketChannel.close();
 		clientSocketChannel = null;
 		connected = false;
+	}
+	
+	public void close(boolean restartFlag) throws IOException {
+		clientSocketChannel.close();
+		clientSocketChannel = null;
+		connected = false;
+
+		if (restartFlag) {
+			eventListener.onDisconnected(clientSocketChannel);	// 1. clientSocketChannel is unused, 2. add restartFlag as params
+		}
 	}
 	
 	public SelectableChannel getSelectableChannel() {

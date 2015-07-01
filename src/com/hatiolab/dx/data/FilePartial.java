@@ -123,6 +123,7 @@ public class FilePartial extends Data {
 		this.end = (int)Util.readU32(buf);
 		this.path = Util.readString(buf, Data.PATH_MAX_SIZE);
 		
+		this.content = new byte[this.partialLen];
 		buf.get(this.content);
 	}
 

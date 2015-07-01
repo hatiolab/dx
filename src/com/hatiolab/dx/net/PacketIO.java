@@ -23,6 +23,8 @@ import com.hatiolab.dx.data.FileInfo;
 import com.hatiolab.dx.data.FileInfoArray;
 import com.hatiolab.dx.data.FilePartial;
 import com.hatiolab.dx.data.FilePartialQuery;
+import com.hatiolab.dx.data.MovieFrame;
+import com.hatiolab.dx.data.MovieInfo;
 import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.data.S16Array;
 import com.hatiolab.dx.data.S32Array;
@@ -35,7 +37,7 @@ import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
 
 public class PacketIO {
-	private static final int MAX_PACKET_SIZE = 1024 * 1024 * 3;
+	private static final int MAX_PACKET_SIZE = 1024 * 1024;
 	private static final byte[] DEFAULT_BROADCAST_ADDR = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF };
 	
 	static private class QueuedBuffer {
@@ -124,6 +126,12 @@ public class PacketIO {
 			break;
 		case Data.TYPE_STREAM	:
 			data = new Stream();
+			break;
+		case Data.TYPE_MOVIE_INFO:
+			data = new MovieInfo();
+			break;
+		case Data.TYPE_MOVIE_FRAME:
+			data = new MovieFrame();
 			break;
 		}
 

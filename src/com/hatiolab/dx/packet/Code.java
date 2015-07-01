@@ -50,5 +50,15 @@ public class Code {
     /* Stream */
     public final static int DX_STREAM_BASE					= 0x00;
     public final static int DX_STREAM						= (DX_STREAM_BASE + 0);	/* Stream 데이타 */
+    public final static int DX_STREAM_PLAYBACK				= (DX_STREAM_BASE + 1);	/* Stream 데이타 */
 
+    public final static int DX_MOVIE_BASE					= 0x00;
+    public final static int DX_MOVIE_GET_INFO				= (DX_MOVIE_BASE + 0);
+    public final static int DX_MOVIE_INFO					= (DX_MOVIE_BASE + 1);
+    public final static int DX_MOVIE_COMMAND_START			= (DX_MOVIE_BASE + 2);
+    public final static int DX_MOVIE_COMMAND_STOP			= (DX_MOVIE_BASE + 3);
+    public final static int DX_MOVIE_COMMAND_RESUME			= (DX_MOVIE_BASE + 4);
+    public final static int DX_MOVIE_COMMAND_PAUSE			= (DX_MOVIE_BASE + 5);
+    public final static int DX_MOVIE_FRAME					= (DX_MOVIE_BASE + 6);
+    
 }

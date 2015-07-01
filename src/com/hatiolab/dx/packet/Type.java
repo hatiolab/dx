@@ -17,5 +17,5 @@ public class Type {
     public final static int DX_PACKET_TYPE_COMMAND			= 6;	/* Command */
     public final static int DX_PACKET_TYPE_FILE				= 7;	/* File Related */
     public final static int DX_PACKET_TYPE_STREAM			= 8;	/* Streaming Data */
-
+    public final static int DX_PACKET_TYPE_MOVIE			= 9;	/* Movie Playback */
 }
