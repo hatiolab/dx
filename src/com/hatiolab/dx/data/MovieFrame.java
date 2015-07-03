@@ -15,7 +15,8 @@ public class MovieFrame extends Data {
 	int flags;
 	int indexCount;
 	List<MovieTrackIndex> trackIndexList;
-	byte[] track;
+//	byte[] track;
+	ByteBuffer track;
 	
 	public MovieFrame() {
 		// do nothing
@@ -80,13 +81,17 @@ public class MovieFrame extends Data {
 		this.trackIndexList = trackIndexList;
 	}
 
-	public byte[] getTrack() {
+//	public byte[] getTrack() {
+//		return track;
+//	}
+
+	public ByteBuffer getTrack() {
 		return track;
 	}
-
-	public void setTrack(byte[] track) {
-		this.track = track;
-	}
+	
+//	public void setTrack(byte[] track) {
+//		this.track = track;
+//	}
 
 	@Override
 	public int unmarshalling(byte[] buf, int offset) throws IOException {
@@ -114,8 +119,9 @@ public class MovieFrame extends Data {
 			}
 		}
 		
-		this.track = new byte[getByteLength() - pos];
-		System.arraycopy(buf, pos, track, 0, getByteLength() - pos);
+//		this.track = new byte[getByteLength() - pos];
+//		System.arraycopy(buf, pos, track, 0, getByteLength() - pos);
+		this.track = ByteBuffer.wrap(buf, pos, getByteLength() - pos);
 		
 		return getByteLength();
 	}
@@ -135,6 +141,24 @@ public class MovieFrame extends Data {
 		return getByteLength();
 	}
 	
+//	@Override
+//	public void unmarshalling(ByteBuffer buf) throws IOException {
+//		this.path = Util.readString(buf, PATH_MAX_SIZE);
+//		this.frameno = (int)Util.readU32(buf);
+//		this.frameLength = (int)Util.readU32(buf);
+//		this.flags = (int)Util.readU8(buf);
+//		this.indexCount = (int)Util.readU8(buf);
+//		
+//		for(int i = 0; i < indexCount; i++) {
+//			MovieTrackIndex track = new MovieTrackIndex();
+//			track.unmarshalling(buf);
+//			this.getTrackIndexList().add(track);
+//		}
+//		
+//		track = new byte[frameLength];
+//		buf.get(track);
+//	}
+	
 	@Override
 	public void unmarshalling(ByteBuffer buf) throws IOException {
 		this.path = Util.readString(buf, PATH_MAX_SIZE);
@@ -149,8 +173,7 @@ public class MovieFrame extends Data {
 			this.getTrackIndexList().add(track);
 		}
 		
-		track = new byte[frameLength];
-		buf.get(track);
+		track = buf.duplicate();
 	}
 
 	@Override
