@@ -120,6 +120,8 @@ public class PacketIO {
 		if(data != null)
 			data.unmarshalling(buf);
 		
+		/* TODO how to treat unregistered data types */
+		
 		return data;
 	}
 

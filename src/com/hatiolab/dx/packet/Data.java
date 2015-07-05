@@ -11,7 +11,7 @@ public class Data implements Marshallable {
 	public static final int PATH_MAX_SIZE = 128;
 	public static final int FILE_PARTIAL_MAX_SIZE = 500000;
 
-	/* Data Types */
+	/* Predefined Data Types */
 
 	public static final int TYPE_NONE =				0;		/* Empty Data */
 	public static final int TYPE_PRIMITIVE	=		1;		/* Primitive Data */
