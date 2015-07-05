@@ -10,12 +10,12 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import android.annotation.SuppressLint;
 import android.util.Log;
-
 import com.hatiolab.dx.data.ByteArray;
 import com.hatiolab.dx.data.ByteString;
 import com.hatiolab.dx.data.F32Array;
@@ -49,6 +49,34 @@ public class PacketIO {
 		}
 	}
 	
+	@SuppressLint("UseSparseArrays")
+	private static HashMap<Integer, Class<? extends Data>> dataMarshallers = new HashMap<Integer, Class<? extends Data>>();
+//	private static SparseArray<Class> dataMarshallers = new SparseArray<Class>(); -- Android Only.
+	
+	static {
+		registerDataMarshaller(Data.TYPE_NONE, Data.class);
+		
+		registerDataMarshaller(Data.TYPE_PRIMITIVE, Primitive.class);
+		registerDataMarshaller(Data.TYPE_U8_ARRAY, ByteArray.class);
+		registerDataMarshaller(Data.TYPE_S8_ARRAY, ByteArray.class);
+		registerDataMarshaller(Data.TYPE_U16_ARRAY, U16Array.class);
+		registerDataMarshaller(Data.TYPE_S16_ARRAY, S16Array.class);
+		registerDataMarshaller(Data.TYPE_U32_ARRAY, U32Array.class);
+		registerDataMarshaller(Data.TYPE_S32_ARRAY, S32Array.class);
+		registerDataMarshaller(Data.TYPE_F32_ARRAY, F32Array.class);
+		
+		registerDataMarshaller(Data.TYPE_STRING, ByteString.class);
+		
+		registerDataMarshaller(Data.TYPE_FILEINFO, FileInfo.class);
+		registerDataMarshaller(Data.TYPE_FILEINFO_ARRAY, FileInfoArray.class);
+		registerDataMarshaller(Data.TYPE_FILE_PARTIAL_QUERY, FilePartialQuery.class);
+		registerDataMarshaller(Data.TYPE_FILE_PARTIAL, FilePartial.class);
+		
+		registerDataMarshaller(Data.TYPE_STREAM, Stream.class);
+		registerDataMarshaller(Data.TYPE_MOVIE_INFO, MovieInfo.class);
+		registerDataMarshaller(Data.TYPE_MOVIE_FRAME, MovieFrame.class);
+	}
+	
 	private static WeakHashMap<SocketChannel, Queue<QueuedBuffer>> sendBufferQMap = new WeakHashMap<SocketChannel, Queue<QueuedBuffer>>();
 	private static WeakHashMap<SocketChannel, ByteBuffer> readBufferMap = new WeakHashMap<SocketChannel, ByteBuffer>();
 
@@ -72,6 +100,10 @@ public class PacketIO {
 	public static void setBroadcastAddr(InetAddress broadcastAddr) {
 		PacketIO.broadcastAddr = broadcastAddr;
 	}
+	
+	public static void registerDataMarshaller(int type, Class<? extends Data> clazz) {
+		dataMarshallers.put(type, clazz);
+	}
 
 	private static Header parseHeader(ByteBuffer buf) throws Exception {
 		header.unmarshalling(buf);
@@ -79,63 +111,14 @@ public class PacketIO {
 		return header;
 	}
 	
-	private static Data parseData(ByteBuffer buf, Header header) throws Exception {
-		Data data = null;
+	private static Data parseData(ByteBuffer buf, Header header) throws Exception {		
 		
-		switch(header.getDataType()) {
-		case Data.TYPE_NONE :
-			data = new Data();
-			break;
-		case Data.TYPE_PRIMITIVE :
-			data = new Primitive();
-			break;
-		case Data.TYPE_U8_ARRAY	:
-		case Data.TYPE_S8_ARRAY	:
-			data = new ByteArray();
-			break;
-		case Data.TYPE_U16_ARRAY :
-			data = new U16Array();
-			break;
-		case Data.TYPE_S16_ARRAY :
-			data = new S16Array();
-			break;
-		case Data.TYPE_U32_ARRAY :
-			data = new U32Array();
-			break;
-		case Data.TYPE_S32_ARRAY :
-			data = new S32Array();
-			break;
-		case Data.TYPE_F32_ARRAY :
-			data = new F32Array();
-			break;
-		case Data.TYPE_STRING :
-			data = new ByteString();
-			break;
-
-		case Data.TYPE_FILEINFO	:
-			data = new FileInfo();
-			break;
-		case Data.TYPE_FILEINFO_ARRAY :
-			data = new FileInfoArray();
-			break;
-		case Data.TYPE_FILE_PARTIAL_QUERY :
-			data = new FilePartialQuery();
-			break;
-		case Data.TYPE_FILE_PARTIAL	:
-			data = new FilePartial();
-			break;
-		case Data.TYPE_STREAM	:
-			data = new Stream();
-			break;
-		case Data.TYPE_MOVIE_INFO:
-			data = new MovieInfo();
-			break;
-		case Data.TYPE_MOVIE_FRAME:
-			data = new MovieFrame();
-			break;
-		}
-
-		data.unmarshalling(buf);
+		Class<? extends Data> marshaller = dataMarshallers.get(header.getDataType());
+		
+		Data data = (Data)marshaller.newInstance();
+		
+		if(data != null)
+			data.unmarshalling(buf);
 		
 		return data;
 	}
