@@ -9,7 +9,8 @@ import com.hatiolab.dx.packet.Data;
 public class Stream extends Data {
 	int len;
 	int type;
-	byte[] content;
+//	byte[] content;
+	ByteBuffer content;
 	
 	public Stream() {
 	}
@@ -17,7 +18,8 @@ public class Stream extends Data {
 	public Stream(int type, byte[] content) {
 		this.type = type;
 		this.len = content.length;
-		this.content = content;
+//		this.content = content;
+		this.content = ByteBuffer.wrap(content);
 	}
 
 	public int getLen() {
@@ -36,14 +38,14 @@ public class Stream extends Data {
 		this.type = type;
 	}
 
-	public byte[] getContent() {
+	public ByteBuffer getContent() {
 		return content;
 	}
 
 	public void setContent(byte[] content) {
 		this.len = content.length;
 
-		this.content = content;
+		this.content = ByteBuffer.wrap(content);
 	}
 
 	@Override
@@ -60,9 +62,11 @@ public class Stream extends Data {
 		
 		int pos = offset + 8;
 		
-		this.content = new byte[this.len];
+//		this.content = new byte[this.len];
+//		
+//		System.arraycopy(buf, pos, this.content, 0, this.len);
 		
-		System.arraycopy(buf, pos, this.content, 0, this.len);
+		this.content = ByteBuffer.wrap(buf, pos, this.len);
 
 		return getByteLength();
 	}
@@ -84,9 +88,26 @@ public class Stream extends Data {
 		return getByteLength();
 	}
 
+//	@Override
+//	public void unmarshalling(ByteBuffer buf) throws IOException {
+//
+//		if(8 > buf.remaining())
+//			throw new IOException("OutOfBound");
+//
+//		this.len = (int)Util.readU32(buf);
+//		this.type = (int)Util.readU16(buf);
+//		Util.readU16(buf); /* reserved field */
+//
+//		if(this.len > buf.remaining())
+//			throw new IOException("OutOfBound");
+//		
+//		this.content = new byte[this.len];
+//		
+//		buf.get(this.content);
+//	}
+	
 	@Override
 	public void unmarshalling(ByteBuffer buf) throws IOException {
-
 		if(8 > buf.remaining())
 			throw new IOException("OutOfBound");
 
@@ -97,9 +118,7 @@ public class Stream extends Data {
 		if(this.len > buf.remaining())
 			throw new IOException("OutOfBound");
 		
-		this.content = new byte[this.len];
-		
-		buf.get(this.content);
+		this.content = buf.duplicate();
 	}
 	
 	@Override
