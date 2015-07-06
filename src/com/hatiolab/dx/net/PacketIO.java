@@ -111,7 +111,7 @@ public class PacketIO {
 		return header;
 	}
 	
-	private static Data parseData(ByteBuffer buf, Header header) throws Exception {		
+	private static Data parseData(ByteBuffer buf, Header header) throws Exception {
 		
 		Class<? extends Data> marshaller = dataMarshallers.get(header.getDataType());
 		
@@ -127,8 +127,10 @@ public class PacketIO {
 
 	private static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
 		int nread = channel.read(buffer);
-		if(0 > nread)
+		if(0 > nread) {
+			lengthBuf.flip();
 			throw new IOException("Peer closed.");
+		}
 		return nread;
 	}
 
@@ -199,6 +201,11 @@ public class PacketIO {
 		
 		Selector selector = EventMultiplexer.getInstance().getSelector();
 		SelectionKey key = channel.keyFor(selector);
+		if (key == null) {
+			// TODO Exception
+			return;
+		}
+		
 		int i = key.interestOps();
 		key.interestOps(i | SelectionKey.OP_WRITE);
 		EventMultiplexer.getInstance().wakeup();

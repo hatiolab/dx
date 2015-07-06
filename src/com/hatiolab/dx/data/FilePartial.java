@@ -113,7 +113,6 @@ public class FilePartial extends Data {
 	
 	@Override
 	public void unmarshalling(ByteBuffer buf) throws IOException {
-		
 		if(getByteLength() > buf.remaining())
 			throw new IOException("OutOfBound");
 		
@@ -129,7 +128,6 @@ public class FilePartial extends Data {
 
 	@Override
 	public void marshalling(ByteBuffer buf) throws IOException {
-
 		if(getByteLength() > buf.remaining())
 			throw new IOException("OutOfBound");
 
