@@ -128,7 +128,7 @@ public class PacketIO {
 	private static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
 		int nread = channel.read(buffer);
 		if(0 > nread) {
-			lengthBuf.flip();
+			lengthBuf.clear();
 			throw new IOException("Peer closed.");
 		}
 		return nread;
@@ -143,14 +143,14 @@ public class PacketIO {
 		}
 		
 		if (packetBuf.position() == 0) {
+			lengthBuf.clear();
+			
 			PacketIO.read(channel, lengthBuf);
 			lengthBuf.flip();
 			long length = Util.readU32(lengthBuf);
 			lengthBuf.flip();
 			packetBuf.limit((int)length);
 			packetBuf.put(lengthBuf);
-			
-			lengthBuf.clear();
 		}
 		
 		PacketIO.read(channel, packetBuf);
