@@ -13,8 +13,8 @@ import com.hatiolab.dx.packet.Packet;
 public class PacketServer {
 	public static final String TAG = "PacketServer";
 	
-	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 * 3;
-	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 * 3;
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 2;
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 2;
 		
 	protected PacketEventListener eventListener = null;
 	protected int servicePort;

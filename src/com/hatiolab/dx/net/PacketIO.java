@@ -37,7 +37,7 @@ import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
 
 public class PacketIO {
-	private static final int MAX_PACKET_SIZE = 1024 * 1024;
+	private static final int MAX_PACKET_SIZE = 1024 * 500;
 	private static final byte[] DEFAULT_BROADCAST_ADDR = { (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF };
 	
 	static private class QueuedBuffer {

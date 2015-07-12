@@ -42,7 +42,7 @@ public class DxClient {
 	}
 		
 	public void startPacketClient(InetAddress address, int port, PacketEventListener eventListener) throws IOException {
-		if(packetClient != null)
+		if(packetClient != null && packetClient.isConnected())
 			return;
 		
 		packetClient = new PacketClient(eventListener, address.getHostAddress(), port);

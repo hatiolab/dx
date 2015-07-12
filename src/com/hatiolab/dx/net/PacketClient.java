@@ -12,8 +12,8 @@ import com.hatiolab.dx.packet.Packet;
 public class PacketClient {
 	public static final String TAG = "PacketClient";
 	
-	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 * 3; 
-	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 * 3;
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 2; 
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 2;
 	
 	protected PacketEventListener eventListener = null;
 	protected int port;
@@ -54,8 +54,7 @@ public class PacketClient {
 			} catch(Exception e) {
 				e.printStackTrace();
 				try {
-//					close();
-					close(true);
+					close();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -82,16 +81,6 @@ public class PacketClient {
 		clientSocketChannel.close();
 		clientSocketChannel = null;
 		connected = false;
-	}
-	
-	public void close(boolean restartFlag) throws IOException {
-		clientSocketChannel.close();
-		clientSocketChannel = null;
-		connected = false;
-
-		if (restartFlag) {
-			eventListener.onDisconnected(clientSocketChannel);	// 1. clientSocketChannel is unused, 2. add restartFlag as params
-		}
 	}
 	
 	public SelectableChannel getSelectableChannel() {
