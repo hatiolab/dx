@@ -38,6 +38,7 @@ public class PacketServer {
 						SelectionKey registered = accepted.register(key.selector(), SelectionKey.OP_READ);
 						registered.attach(this);
 						
+						SessionManager.register(accepted);
 						eventListener.onConnected(accepted);
 						System.out.println("ACCEPTED");
 					}
