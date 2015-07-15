@@ -30,7 +30,10 @@ public class DxClient {
 	}
 
 	public void close() throws Exception {
-		discoveryClient.close();
+		if (packetClient != null) {
+			packetClient.close();
+			packetClient = null;
+		}
 	}
 
 	public boolean isConnected() {

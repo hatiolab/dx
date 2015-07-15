@@ -127,7 +127,7 @@ public class PacketIO {
 
 	private static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
 		int nread = channel.read(buffer);
-		if(0 > nread) {
+		if(0 >= nread) {
 			lengthBuf.clear();
 			throw new IOException("Peer closed.");
 		}
