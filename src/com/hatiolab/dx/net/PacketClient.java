@@ -35,6 +35,7 @@ public class PacketClient {
 
 							key.interestOps(SelectionKey.OP_READ);
 							
+							SessionManager.register(channel);
 							eventListener.onConnected(channel);
 						}
 					}
