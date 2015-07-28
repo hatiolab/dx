@@ -146,7 +146,7 @@ public class Stream extends Data {
 		Util.writeU32(this.len, buf);
 		Util.writeU16(this.type, buf);
 		Util.writeU16(this.flag, buf);
-		Util.writeU32(this.flag, buf);
+		Util.writeU32(this.frameSeq, buf);
 		// FIXME timestampe is long long
 		this.timestampe = (int)Util.readU32(buf);
 		this.timestampe = (int)Util.readU32(buf);
