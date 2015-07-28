@@ -9,6 +9,9 @@ import com.hatiolab.dx.packet.Data;
 public class Stream extends Data {
 	int len;
 	int type;
+	int flag;
+	int frameSeq;
+	long timestampe;
 //	byte[] content;
 	ByteBuffer content;
 	
@@ -56,14 +59,18 @@ public class Stream extends Data {
 
 		this.len = (int)Util.readU32(buf, offset);
 		this.type = (int)Util.readU16(buf, offset + 4);
-
+		this.flag = (int)Util.readU16(buf, offset + 6);
+		this.frameSeq = (int)Util.readU32(buf, offset + 8);
+		// TODO
+//		this.timestampe = (int)Util.readU32(buf, offset + 12);
+//		this.timestampe = (int)Util.readU32(buf, offset + 16);
+		
 		if(offset + getByteLength() > buf.length)
 			throw new IOException("OutOfBound");
 		
-		int pos = offset + 8;
+		int pos = offset + 20;
 		
 //		this.content = new byte[this.len];
-//		
 //		System.arraycopy(buf, pos, this.content, 0, this.len);
 		
 		this.content = ByteBuffer.wrap(buf, pos, this.len);
@@ -79,9 +86,14 @@ public class Stream extends Data {
 
 		Util.writeU32(this.len, buf, offset);
 		Util.writeU16(this.type, buf, offset + 4);
-		Util.writeU16(0, buf, offset + 6);
+		Util.writeU16(this.flag, buf, offset + 6);
+		Util.writeU32(this.frameSeq, buf, offset + 8);
 		
-		int pos = offset + 8;
+		// TODO
+//		Util.writeU32(this.timestampe, buf, offset + 12);
+//		Util.writeU32(this.timestampe, buf, offset + 16);
+		
+		int pos = offset + 20;
 		
 		System.arraycopy(this.content, 0, buf, pos, this.len);
 
@@ -113,8 +125,12 @@ public class Stream extends Data {
 
 		this.len = (int)Util.readU32(buf);
 		this.type = (int)Util.readU16(buf);
-		Util.readU16(buf); /* reserved field */
-
+		this.flag = (int)Util.readU16(buf);
+		this.frameSeq = (int)Util.readU32(buf);
+		// FIXME timestampe is long long
+		this.timestampe = (int)Util.readU32(buf);
+		this.timestampe = (int)Util.readU32(buf);
+		
 		if(this.len > buf.remaining())
 			throw new IOException("OutOfBound");
 		
@@ -129,14 +145,18 @@ public class Stream extends Data {
 
 		Util.writeU32(this.len, buf);
 		Util.writeU16(this.type, buf);
-		Util.writeU16(0, buf); /* reserved field */
+		Util.writeU16(this.flag, buf);
+		Util.writeU32(this.flag, buf);
+		// FIXME timestampe is long long
+		this.timestampe = (int)Util.readU32(buf);
+		this.timestampe = (int)Util.readU32(buf);
 		
 		buf.put(this.content);
 	}
 	
 	@Override
 	public int getByteLength() {
-		return 8 + len;
+		return 20 + len;
 	}
 
 	@Override
