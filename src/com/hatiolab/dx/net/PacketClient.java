@@ -79,8 +79,11 @@ public class PacketClient {
 	}
 
 	public void close() throws IOException {
-		clientSocketChannel.close();
-		clientSocketChannel = null;
+		if (clientSocketChannel != null) {
+			clientSocketChannel.close();
+			clientSocketChannel = null;
+		}
+		
 		connected = false;
 	}
 	
