@@ -143,14 +143,18 @@ public class PacketIO {
 		}
 		
 		if (packetBuf.position() == 0) {
-			lengthBuf.clear();
-			
 			PacketIO.read(channel, lengthBuf);
+			
+			if(lengthBuf.hasRemaining())
+				return null;
+			
 			lengthBuf.flip();
 			long length = Util.readU32(lengthBuf);
 			lengthBuf.flip();
 			packetBuf.limit((int)length);
 			packetBuf.put(lengthBuf);
+			
+			lengthBuf.clear();			
 		}
 		
 		PacketIO.read(channel, packetBuf);
