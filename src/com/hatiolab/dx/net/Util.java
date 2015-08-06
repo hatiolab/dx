@@ -44,6 +44,20 @@ public class Util {
 				| ((0x00FFL & tmpbuf[1]) << 16)
 				| ((0x00FFL & tmpbuf[0]) << 24);
 	}
+	
+	public static final long readU64(ByteBuffer buf) {
+		byte[] tmpbuf = new byte[8];
+		buf.get(tmpbuf);
+		
+		return (0x00FFL & tmpbuf[7])
+				| ((0x00FFL & tmpbuf[6]) << 8)
+				| ((0x00FFL & tmpbuf[5]) << 16)
+				| ((0x00FFL & tmpbuf[4]) << 24)
+				| ((0x00FFL & tmpbuf[3]) << 32)
+				| ((0x00FFL & tmpbuf[2]) << 40)
+				| ((0x00FFL & tmpbuf[1]) << 48)
+				| ((0x00FFL & tmpbuf[0]) << 56);
+	}
 
 	public static final int readS32(byte[] buf, int offset) {
 		return (0x00FF & buf[offset + 3])
@@ -51,7 +65,7 @@ public class Util {
 				| ((0x00FF & buf[offset + 1]) << 16)
 				| ((0x00FF & buf[offset + 0]) << 24);
 	}
-
+	
 	public static final long readS32(ByteBuffer buf) {
 		byte[] tmpbuf = new byte[4];
 		buf.get(tmpbuf);
@@ -60,6 +74,20 @@ public class Util {
 				| ((0x00FF & tmpbuf[2]) << 8)
 				| ((0x00FF & tmpbuf[1]) << 16)
 				| ((0x00FF & tmpbuf[0]) << 24);
+	}
+	
+	public static final long readS64(ByteBuffer buf) {
+		byte[] tmpbuf = new byte[8];
+		buf.get(tmpbuf);
+		
+		return (0x00FFL & tmpbuf[7])
+				| ((0x00FFL & tmpbuf[6]) << 8)
+				| ((0x00FFL & tmpbuf[5]) << 16)
+				| ((0x00FFL & tmpbuf[4]) << 24)
+				| ((0x00FFL & tmpbuf[3]) << 32)
+				| ((0x00FFL & tmpbuf[2]) << 40)
+				| ((0x00FFL & tmpbuf[1]) << 48)
+				| ((0x00FFL & tmpbuf[0]) << 56);
 	}
 
 	public static final int readU16(byte[] buf, int offset) {

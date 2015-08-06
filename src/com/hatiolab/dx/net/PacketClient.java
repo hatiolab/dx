@@ -12,8 +12,11 @@ import com.hatiolab.dx.packet.Packet;
 public class PacketClient {
 	public static final String TAG = "PacketClient";
 	
-	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 2; 
-	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 2;
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 10; 
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 10;
+	
+//	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 8192; 
+//	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 8192;
 	
 	protected PacketEventListener eventListener = null;
 	protected int port;
