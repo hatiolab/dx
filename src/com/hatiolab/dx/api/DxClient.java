@@ -3,6 +3,7 @@ package com.hatiolab.dx.api;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 
 import com.hatiolab.dx.mplexer.EventMultiplexer;
 import com.hatiolab.dx.net.DiscoveryClient;
@@ -29,9 +30,9 @@ public class DxClient {
 		mplexer.register(discoveryClient.getSelectableChannel(), SelectionKey.OP_READ, discoveryClient.getSelectableHandler());
 	}
 
-	public void close() throws Exception {
+	public void close(SocketChannel channel) throws Exception {
 		if (packetClient != null) {
-			packetClient.close();
+			packetClient.close(channel);
 			packetClient = null;
 		}
 	}

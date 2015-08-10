@@ -12,11 +12,11 @@ import com.hatiolab.dx.packet.Packet;
 public class PacketClient {
 	public static final String TAG = "PacketClient";
 	
-	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 10; 
-	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 10;
+//	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 1024000 / 10; 
+//	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 1024000 / 10;
 	
-//	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 8192; 
-//	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 8192;
+	public static final int DEFAULT_SOCKET_RCV_BUF_SIZE = 8192 * 4;
+	public static final int DEFAULT_SOCKET_SND_BUF_SIZE = 8192 * 4;
 	
 	protected PacketEventListener eventListener = null;
 	protected int port;
@@ -27,10 +27,10 @@ public class PacketClient {
 	protected SelectableHandler selectableHandler = new SelectableHandler() {
 		@Override
 		public void onSelected(SelectionKey key) {
+			SocketChannel channel = (SocketChannel)key.channel();
 			try {
 				if(key.isConnectable()) {
 					
-					SocketChannel channel = (SocketChannel)key.channel();
 					if(channel.isConnectionPending()) {
 						if(channel.finishConnect()) {
 							
@@ -45,7 +45,6 @@ public class PacketClient {
 				}
 				
 				if(key.isReadable()) {
-					SocketChannel channel = (SocketChannel)key.channel();
 					Packet packet = PacketIO.receivePacket(channel);
 
 					if(packet != null)
@@ -58,7 +57,7 @@ public class PacketClient {
 			} catch(Exception e) {
 				e.printStackTrace();
 				try {
-					close();
+					close(channel);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -81,13 +80,14 @@ public class PacketClient {
 		clientSocketChannel.socket().setSendBufferSize(DEFAULT_SOCKET_SND_BUF_SIZE);
 	}
 
-	public void close() throws IOException {
+	public void close(SocketChannel channel) throws IOException {
 		if (clientSocketChannel != null) {
 			clientSocketChannel.close();
 			clientSocketChannel = null;
 		}
 		
 		connected = false;
+		eventListener.onDisconnected(channel);
 	}
 	
 	public SelectableChannel getSelectableChannel() {

@@ -125,9 +125,10 @@ public class PacketIO {
 		return data;
 	}
 
-	private static int read(SocketChannel channel, ByteBuffer buffer) throws IOException {
+	private static int read(SocketChannel channel, ByteBuffer buffer, boolean mustRead) throws IOException {
 		int nread = channel.read(buffer);
-		if(0 >= nread) {
+		
+		if(0 > nread || (nread == 0 && mustRead)) {
 			lengthBuf.clear();
 			throw new IOException("Peer closed.");
 		}
@@ -135,7 +136,7 @@ public class PacketIO {
 	}
 
 	public static Packet receivePacket(SocketChannel channel) throws Exception {
-
+		
 		ByteBuffer packetBuf = readBufferMap.get(channel);
 		if(packetBuf == null) {
 			packetBuf = ByteBuffer.allocate(MAX_PACKET_SIZE);
@@ -143,7 +144,7 @@ public class PacketIO {
 		}
 		
 		if (packetBuf.position() == 0) {
-			PacketIO.read(channel, lengthBuf);
+			PacketIO.read(channel, lengthBuf, true);
 			
 			if(lengthBuf.hasRemaining())
 				return null;
@@ -154,10 +155,12 @@ public class PacketIO {
 			packetBuf.limit((int)length);
 			packetBuf.put(lengthBuf);
 			
-			lengthBuf.clear();			
+			lengthBuf.clear();
+			
+			PacketIO.read(channel, packetBuf, false);
+		} else {
+			PacketIO.read(channel, packetBuf, true);
 		}
-		
-		PacketIO.read(channel, packetBuf);
 
 		if (packetBuf.hasRemaining()) {
 			return null;
@@ -192,7 +195,7 @@ public class PacketIO {
 
 	public static void sendPacket(SocketChannel channel, Packet packet, boolean discardable) throws IOException {
 		
-		Queue<QueuedBuffer> queue = sendBufferQMap.get(channel);			
+		Queue<QueuedBuffer> queue = sendBufferQMap.get(channel);
 		if (queue == null) {
 			queue = new ConcurrentLinkedQueue<QueuedBuffer>();
 			sendBufferQMap.put(channel, queue);
