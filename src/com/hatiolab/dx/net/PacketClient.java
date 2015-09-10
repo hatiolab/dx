@@ -7,7 +7,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import com.hatiolab.dx.mplexer.SelectableHandler;
+import com.hatiolab.dx.packet.Code;
+import com.hatiolab.dx.packet.Data;
+import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
+import com.hatiolab.dx.packet.Type;
 
 public class PacketClient {
 	public static final String TAG = "PacketClient";
@@ -39,6 +43,20 @@ public class PacketClient {
 							key.interestOps(SelectionKey.OP_READ);
 							
 							SessionManager.register(channel);
+							
+							/* Send Connected Event to peer */
+							Header header = new Header();
+							header.setType(Type.DX_PACKET_TYPE_EVENT);
+							header.setCode((byte)Code.DX_EVT_CONNECT);
+							header.setDataType(Data.TYPE_NONE);
+							
+							try {
+								PacketIO.sendPacket(channel, header, null);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							
+							/* callback */
 							eventListener.onConnected(channel);
 						}
 					}

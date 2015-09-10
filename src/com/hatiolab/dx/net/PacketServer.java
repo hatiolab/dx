@@ -7,8 +7,13 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import com.hatiolab.dx.data.Primitive;
 import com.hatiolab.dx.mplexer.SelectableHandler;
+import com.hatiolab.dx.packet.Code;
+import com.hatiolab.dx.packet.Data;
+import com.hatiolab.dx.packet.Header;
 import com.hatiolab.dx.packet.Packet;
+import com.hatiolab.dx.packet.Type;
 
 public class PacketServer {
 	public static final String TAG = "PacketServer";
@@ -39,6 +44,8 @@ public class PacketServer {
 						registered.attach(this);
 						
 						SessionManager.register(accepted);
+						
+						/* callback to listener */
 						eventListener.onConnected(accepted);
 						System.out.println("ACCEPTED");
 					}
