@@ -76,7 +76,8 @@ public class ByteString extends Data {
 		
 		if(this.len > buf.remaining())
 			throw new IOException("OutOfBound");
-		Util.writeString(data, buf, (int)this.len);
+
+		this.data = Util.readString(buf, (int)this.len, "UTF-8");
 	}
 	
 	@Override

@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class Util {
@@ -242,23 +241,23 @@ public class Util {
 				break;
 			i++;
 		}
-		return new String(buf, offset, i >= 0 ? i : size, "UTF-8");
+		return new String(buf, offset, i >= 0 ? i : size, "UTF-8").trim();
 	}
 	
 	public static final String readString(ByteBuffer buf, int size) throws IOException {
 		byte[] tmpbuf = new byte[size];
 
-		buf.order(ByteOrder.BIG_ENDIAN);
 		buf.get(tmpbuf, 0, size);
 		
-		return new String(tmpbuf, "UTF-8");
+		return new String(tmpbuf, "UTF-8").trim();
 	}
 
-	public static final String readString(ByteBuffer buf, int size, boolean charSet) throws IOException {
+	public static final String readString(ByteBuffer buf, int size, String charSet) throws IOException {
 		byte[] tmpbuf = new byte[size];
+
 		buf.get(tmpbuf, 0, size);
 		
-		return new String(tmpbuf, Charset.defaultCharset());
+		return new String(tmpbuf, charSet);
 	}
 	
 	public static final void writeString(String data, byte[] buf, int offset, int size) throws IOException {
